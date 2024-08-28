@@ -1,4 +1,4 @@
-namespace Vertex;
+namespace Vertex.Test;
 
 using System.Threading.Tasks;
 using Godot;
@@ -6,17 +6,16 @@ using Chickensoft.GoDotTest;
 using Chickensoft.GodotTestDriver;
 using Chickensoft.GodotTestDriver.Drivers;
 using Shouldly;
+using Vertex.Game;
 
-public class GameTest : TestClass {
-  private Game _game = default!;
+public class GameTest(Node testScene) : TestClass(testScene) {
+  private Game _sut = default!;
   private Fixture _fixture = default!;
-
-  public GameTest(Node testScene) : base(testScene) { }
 
   [SetupAll]
   public async Task Setup() {
     _fixture = new Fixture(TestScene.GetTree());
-    _game = await _fixture.LoadAndAddScene<Game>();
+    _sut = await _fixture.LoadAndAddScene<Game>();
   }
 
   [CleanupAll]
@@ -24,8 +23,8 @@ public class GameTest : TestClass {
 
   [Test]
   public void TestButtonUpdatesCounter() {
-    var buttonDriver = new ButtonDriver(() => _game.TestButton);
+    var buttonDriver = new ButtonDriver(() => _sut.TestButton);
     buttonDriver.ClickCenter();
-    _game.ButtonPresses.ShouldBe(1);
+    _sut.ButtonPresses.ShouldBe(1);
   }
 }

@@ -1,4 +1,4 @@
-namespace Vertex;
+namespace Vertex.Game;
 
 using Godot;
 
