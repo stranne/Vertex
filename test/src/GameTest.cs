@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Godot;
 using Chickensoft.GoDotTest;
 using Chickensoft.GodotTestDriver;
-using Chickensoft.GodotTestDriver.Drivers;
-using Shouldly;
 using Vertex.Game;
 
 public class GameTest(Node testScene) : TestClass(testScene) {
@@ -21,10 +19,4 @@ public class GameTest(Node testScene) : TestClass(testScene) {
   [CleanupAll]
   public void Cleanup() => _fixture.Cleanup();
 
-  [Test]
-  public void TestButtonUpdatesCounter() {
-    var buttonDriver = new ButtonDriver(() => _sut.TestButton);
-    buttonDriver.ClickCenter();
-    _sut.ButtonPresses.ShouldBe(1);
-  }
 }

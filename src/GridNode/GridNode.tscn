@@ -1,0 +1,86 @@
+[gd_scene load_steps=7 format=3 uid="uid://666kno22fa7d"]
+
+[ext_resource type="Script" path="res://src/GridNode/GridNode.cs" id="1_cr6ng"]
+[ext_resource type="PackedScene" uid="uid://idml65bwgglu" path="res://src/GridNode/pyramid.glb" id="2_eql5g"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_qvgkt"]
+
+[sub_resource type="Animation" id="Animation_3a1n0"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Pyramid:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.75, 0.75, 0.75)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Pyramid:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.375, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_bd75a"]
+resource_name = "spawn"
+length = 0.7
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Pyramid:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3, 0.5, 0.7),
+"transitions": PackedFloat32Array(1, 0.5, 0.5, 0.5),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0.425, 0), Vector3(0, 0.325, 0), Vector3(0, 0.375, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Pyramid:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.3, 0.5, 0.7),
+"transitions": PackedFloat32Array(1, 0.5, 0.5, 0.5),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0.85, 0.85, 0.85), Vector3(0.65, 0.65, 0.65), Vector3(0.75, 0.75, 0.75)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_6nc61"]
+_data = {
+"RESET": SubResource("Animation_3a1n0"),
+"spawn": SubResource("Animation_bd75a")
+}
+
+[node name="GridNode" type="Node3D"]
+script = ExtResource("1_cr6ng")
+
+[node name="Pyramid2" parent="." instance=ExtResource("2_eql5g")]
+unique_name_in_owner = true
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
+visible = false
+
+[node name="Pyramid" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0.375, 0)
+mesh = SubResource("BoxMesh_qvgkt")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {
+"": SubResource("AnimationLibrary_6nc61")
+}

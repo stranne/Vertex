@@ -1,0 +1,23 @@
+@startuml GridNodeLogic
+state "GridNodeLogic State" as Vertex_GridNode_State_GridNodeLogic_State {
+  state "Marked" as Vertex_GridNode_State_GridNodeLogic_State_Marked {
+    state "Marking" as Vertex_GridNode_State_GridNodeLogic_State_Marking
+    state "MarkedIdle" as Vertex_GridNode_State_GridNodeLogic_State_MarkedIdle
+    state "WinningLine" as Vertex_GridNode_State_GridNodeLogic_State_WinningLine
+    state "MarkedDisabled" as Vertex_GridNode_State_GridNodeLogic_State_MarkedDisabled
+  }
+  state "Unmarked" as Vertex_GridNode_State_GridNodeLogic_State_Unmarked {
+    state "Spawning" as Vertex_GridNode_State_GridNodeLogic_State_Spawning
+    state "Hovering" as Vertex_GridNode_State_GridNodeLogic_State_Hovering {
+      state "Leaving" as Vertex_GridNode_State_GridNodeLogic_State_Leaving
+      state "HoveringIdle" as Vertex_GridNode_State_GridNodeLogic_State_HoveringIdle
+      state "Entering" as Vertex_GridNode_State_GridNodeLogic_State_Entering
+    }
+    state "UnmarkedDisabled" as Vertex_GridNode_State_GridNodeLogic_State_UnmarkedDisabled
+    state "UnmarkedIdle" as Vertex_GridNode_State_GridNodeLogic_State_UnmarkedIdle
+  }
+}
+Vertex_GridNode_State_GridNodeLogic_State_Spawning : OnEnter → SpawnStarted
+
+[*] --> Vertex_GridNode_State_GridNodeLogic_State_Spawning
+@enduml

@@ -1,0 +1,57 @@
+{
+  "Chickensoft state": {
+    "scope": "csharp",
+    "prefix": "css",
+    "body": [
+      "namespace ${1:Godot};",
+      "",
+      "using Chickensoft.Introspection;",
+      "",
+      "public partial class ${2:${TM_DIRECTORY/.*[\\\\\\/](\\w+)[\\\\\\/]([sS]tate)[\\\\\\/]([sS]tates).*/$1/}}Logic {",
+      "  public abstract partial record State {",
+      "    [Meta]",
+      "    public partial record ${4:${TM_FILENAME_BASE/(.*)\\.(\\w+)$/$2/}} : ${3:State};",
+      "  }",
+      "}",
+      "",
+    ],
+  },
+  "Chickensoft state transition": {
+    "scope": "csharp",
+    "prefix": "csst",
+    "body": "public Transition On(in Input.$1 input) => To<$2>();"
+  },
+  "Chickensoft input":{
+    "scope": "csharp",
+    "prefix": "csi",
+    "body": [
+      "namespace ${1:Godot};",
+      "",
+      "public partial class ${2:${TM_DIRECTORY/.*[\\\\\\/](\\w+)[\\\\\\/]([sS]tate).*/$1/}}Logic {",
+      "  public abstract partial record Input {",
+      "    $3",
+      "  }",
+      "}",
+      "",
+    ],
+  },
+  "Chickensoft output": {
+    "scope": "csharp",
+    "prefix": "cso",
+    "body": [
+      "namespace ${1:Godot};",
+      "",
+      "public partial class ${2:${TM_DIRECTORY/.*[\\\\\\/](\\w+)[\\\\\\/]([sS]tate).*/$1/}}Logic {",
+      "  public abstract partial record Output {",
+      "    $3",
+      "  }",
+      "}",
+      "",
+    ],
+  },
+  "Chickensoft entry": {
+    "scope": "csharp",
+    "prefix": "cse",
+    "body": "public readonly record struct $1;"
+  },
+}
