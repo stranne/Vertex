@@ -18,5 +18,4 @@ public class GameTest(Node testScene) : TestClass(testScene) {
 
   [CleanupAll]
   public void Cleanup() => _fixture.Cleanup();
-
 }
