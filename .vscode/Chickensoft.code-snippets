@@ -21,7 +21,7 @@
     "prefix": "csst",
     "body": "public Transition On(in Input.$1 input) => To<$2>();"
   },
-  "Chickensoft input":{
+  "Chickensoft input": {
     "scope": "csharp",
     "prefix": "csi",
     "body": [
@@ -49,9 +49,18 @@
       "",
     ],
   },
-  "Chickensoft entry": {
+  "Chickensoft output handling": {
     "scope": "csharp",
-    "prefix": "cse",
+    "prefix": "csoh",
+    "body": [
+      ".Handle((in ${1:${TM_DIRECTORY/.*[\\\\\\/](\\w+).*/$1/}}Logic.Output.${2} output) =>",
+      "  $0",
+      ")"
+    ]
+  },
+  "Chickensoft record": {
+    "scope": "csharp",
+    "prefix": "csr",
     "body": "public readonly record struct $1;"
   },
 }

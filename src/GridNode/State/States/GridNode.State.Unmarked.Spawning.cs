@@ -12,7 +12,7 @@ public partial class GridNodeLogic {
         this.OnExit(() => Output(new Output.SpawnComplete()));
       }
 
-      public Transition On(in Input.Spawned input) => To<UnmarkedIdle>();
+      public Transition On(in Input.Spawned input) => To<Idle>();
     }
   }
 }

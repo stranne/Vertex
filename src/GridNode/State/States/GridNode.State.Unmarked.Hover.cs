@@ -12,7 +12,7 @@ public partial class GridNodeLogic {
         this.OnExit(() => Output(new Output.HoverExited()));
       }
 
-      public Transition On(in Input.HoverExit input) => To<UnmarkedIdle>();
+      public Transition On(in Input.HoverExit input) => To<Idle>();
     }
   }
 }

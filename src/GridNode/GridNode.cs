@@ -9,6 +9,7 @@ using Vertex.Game.Domain;
 using Vertex.GridNode.State;
 
 public interface IGridNode : INode3D {
+  void OnClicked(int currentPlayerId);
   void OnHoverEnter();
   void OnHoverExit();
 }
@@ -16,12 +17,15 @@ public interface IGridNode : INode3D {
 [Meta(typeof(IAutoNode))]
 public partial class GridNode : Node3D, IGridNode {
   private const string ANIMATION_HOVER_NAME = "hover";
+  private const string ANIMATION_SELECT_NAME = "select";
 
   public override void _Notification(int what) => this.Notify(what);
 
   private Color _pyramidMaterialColor = default!;
   private Animation _animationHover = default!;
-  private int _animationPlayerHoverTrackIndex = default!;
+  private Animation _animationSelect = default!;
+  private int _animationHoverTrackIndex = default!;
+  private int _animationSelectTrackIndex = default!;
 
   #region Signals
   [Signal]
@@ -55,10 +59,13 @@ public partial class GridNode : Node3D, IGridNode {
   public void Setup() {
     GridNodeLogic = new GridNodeLogic();
 
-    _pyramidMaterialColor = ((StandardMaterial3D)Pyramid.GetSurfaceOverrideMaterial(0)).AlbedoColor;
-    _animationPlayerHoverTrackIndex = GetAnimationPlayerHoverTrackIndex();
-    // Ensure the first keyframe is the original color
-    _animationHover.TrackSetKeyValue(_animationPlayerHoverTrackIndex, 0, _pyramidMaterialColor);
+    _pyramidMaterialColor = GetCurrentMaterialColor();
+    _animationHover = AnimationPlayer.GetAnimation(ANIMATION_HOVER_NAME);
+    _animationSelect = AnimationPlayer.GetAnimation(ANIMATION_SELECT_NAME);
+    _animationHoverTrackIndex = GetAnimationTrackIndex(_animationHover, "Pyramid:surface_material_override/0:albedo_color");
+    _animationSelectTrackIndex = GetAnimationTrackIndex(_animationSelect, "Pyramid:surface_material_override/0:albedo_color");
+    // Ensure the first keyframe is same as material color
+    SetAnimationFirsTrackKeyColor(_animationHover, _animationHoverTrackIndex, _pyramidMaterialColor);
   }
 
   public void OnResolved() {
@@ -67,11 +74,15 @@ public partial class GridNode : Node3D, IGridNode {
     SpawnAnimated += OnSpawnAnimated;
 
     GridNodeLogicBinding
-      .Handle((in GridNodeLogic.Output.SpawnStarted _) =>
-        AnimationPlayer.Play("spawn")
-      )
+      .Handle((in GridNodeLogic.Output.SpawnStarted _) => {
+        CollisionShape.Disabled = true;
+        AnimationPlayer.Play("spawn");
+      })
       .Handle((in GridNodeLogic.Output.SpawnComplete _) =>
         CollisionShape.Disabled = false
+      )
+      .Handle((in GridNodeLogic.Output.Disabled _) =>
+        CollisionShape.Disabled = true
       )
       .Handle((in GridNodeLogic.Output.HoverEntered _) => {
         SetHoverAnimationsPlayerColor();
@@ -79,6 +90,9 @@ public partial class GridNode : Node3D, IGridNode {
       })
       .Handle((in GridNodeLogic.Output.HoverExited _) =>
         AnimationPlayer.PlayBackwards(ANIMATION_HOVER_NAME)
+      )
+      .Handle((in GridNodeLogic.Output.Marked output) =>
+        ShowSelectedAnimation(output.PlayerId)
       );
 
     GridNodeLogic.Start();
@@ -99,6 +113,9 @@ public partial class GridNode : Node3D, IGridNode {
   public void OnHoverExit() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.HoverExit());
 
+  public void OnClicked(int currentPlayerId) =>
+    GridNodeLogic.Input(new GridNodeLogic.Input.Select(currentPlayerId));
+
   private void SetHoverAnimationsPlayerColor() {
 
     var playerColor = GameRepo.GetCurrentPlayerColor();
@@ -106,18 +123,34 @@ public partial class GridNode : Node3D, IGridNode {
     playerColor.A = 0.4f;
     var color = _pyramidMaterialColor.Blend(playerColor);
 
-    var lastTrackKey = _animationHover.TrackGetKeyCount(_animationPlayerHoverTrackIndex) - 1;
-    _animationHover.TrackSetKeyValue(_animationPlayerHoverTrackIndex, lastTrackKey, color);
+    var lastTrackKey = _animationHover.TrackGetKeyCount(_animationHoverTrackIndex) - 1;
+    _animationHover.TrackSetKeyValue(_animationHoverTrackIndex, lastTrackKey, color);
   }
 
-  private int GetAnimationPlayerHoverTrackIndex() {
-    const string trackPath = "Pyramid:surface_material_override/0:albedo_color";
-
-    _animationHover = AnimationPlayer.GetAnimation(ANIMATION_HOVER_NAME);
-    var trackIndex = _animationHover.FindTrack(trackPath, Animation.TrackType.Value);
-
+  private int GetAnimationTrackIndex(Animation animation, string trackPath) {
+    var trackIndex = animation.FindTrack(trackPath, Animation.TrackType.Value);
     return trackIndex == -1
       ? throw new InvalidOperationException($"{trackPath} track not found.")
       : trackIndex;
   }
+
+  private void ShowSelectedAnimation(int playerId) {
+    var playerColor = GameRepo.GetPlayerColor(playerId);
+    AnimationPlayer.Play(ANIMATION_SELECT_NAME);
+    // Get current color to pick up where any hovering animation might be
+    var currentColor = GetCurrentMaterialColor();
+    SetAnimationFirsTrackKeyColor(_animationHover, _animationHoverTrackIndex, _pyramidMaterialColor);
+    SetAnimationLastTrackKeyColor(_animationSelect, _animationSelectTrackIndex, playerColor);
+  }
+
+  private void SetAnimationFirsTrackKeyColor(Animation animation, int trackIndex, Color color) =>
+    animation.TrackSetKeyValue(trackIndex, 0, color);
+
+  private void SetAnimationLastTrackKeyColor(Animation animation, int trackIndex, Color color) {
+    var lastTrackKey = animation.TrackGetKeyCount(trackIndex) - 1;
+    animation.TrackSetKeyValue(trackIndex, lastTrackKey, color);
+  }
+
+  private Color GetCurrentMaterialColor() =>
+    ((StandardMaterial3D)Pyramid.GetSurfaceOverrideMaterial(0)).AlbedoColor;
 }

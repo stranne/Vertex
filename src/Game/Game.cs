@@ -33,9 +33,9 @@ public partial class Game : Node3D, IGame {
     this.Provide();
   }
 
-  public override void _Process(double delta) => HandleGridNodeHover();
+  public override void _Process(double delta) => HandleGridNodeMouseEvents();
 
-  public void HandleGridNodeHover() {
+  public void HandleGridNodeMouseEvents() {
     var mousePosition = GetViewport().GetMousePosition();
     var from = Camera.ProjectRayOrigin(mousePosition);
     var to = Camera.ProjectRayNormal(mousePosition) * 1000;
@@ -44,6 +44,8 @@ public partial class Game : Node3D, IGame {
     RayCast.TargetPosition = to - from;
 
     RayCast.ForceRaycastUpdate();
-    GameRepo.Hover((RayCast.GetCollider() as Node)?.GetParent()?.GetParent<IGridNode>());
+    var gridNode = (RayCast.GetCollider() as Node)?.GetParent()?.GetParent<IGridNode>();
+    var isLeftMouseButtonPressed = Input.IsActionJustPressed("mouse_left_click");
+    GameRepo.MouseEvent(gridNode, isLeftMouseButtonPressed);
   }
 }
