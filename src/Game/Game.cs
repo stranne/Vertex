@@ -16,19 +16,28 @@ public partial class Game : Node3D, IGame {
   public IGameRepo GameRepo { get; set; } = default!;
   IGameRepo IProvide<IGameRepo>.Value() => GameRepo;
 
+  [Export]
+  public Color[] PlayerColors = [
+    new(1, 0, 0),
+    new(0, 1, 0),
+  ];
+
   #region Nodes
   [Node]
-  public Camera3D Camera { get; set; } = default!;
+  public ICamera3D Camera { get; set; } = default!;
 
   /// <remarks>
   /// RayCast has Enabled property set to false to avoid unnecessary ray casts in physics process.
   /// </remarks>
   [Node]
-  public RayCast3D RayCast { get; set; } = default!;
+  public IRayCast3D RayCast { get; set; } = default!;
+
+  [Node]
+  public INode3D GridBoard { get; set; } = default!;
   #endregion
 
   public void Setup() {
-    GameRepo = new GameRepo();
+    GameRepo = new GameRepo(PlayerColors);
 
     this.Provide();
   }

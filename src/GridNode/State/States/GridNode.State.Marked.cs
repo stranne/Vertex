@@ -6,7 +6,7 @@ using Chickensoft.LogicBlocks;
 public partial class GridNodeLogic {
   public abstract partial record State {
     [Meta]
-    public partial record Marked : State, IGet<Input.GameOver>, IGet<Input.WinningNode>, IGet<Input.Restart> {
+    public partial record Marked : State, IGet<Input.GameOver>, IGet<Input.InWinningLine>, IGet<Input.Restart> {
       public int SelectedPlayerId { get; set; } = default!;
 
       public Marked() {
@@ -15,7 +15,7 @@ public partial class GridNodeLogic {
 
       public Transition On(in Input.GameOver input) => To<MarkedDisabled>();
 
-      public Transition On(in Input.WinningNode input) => To<WinningNode>();
+      public Transition On(in Input.InWinningLine input) => To<WinningNode>();
 
       public Transition On(in Input.Restart input) => To<Spawning>();
     }

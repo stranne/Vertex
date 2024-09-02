@@ -9,9 +9,14 @@ using Vertex.Game.Domain;
 using Vertex.GridNode.State;
 
 public interface IGridNode : INode3D {
+  Vector2I GridPosition { get; }
+  int? SelectedByPlayerId { get; }
+
   void OnClicked(int currentPlayerId);
   void OnHoverEnter();
   void OnHoverExit();
+  void OnGameOver();
+  void OnInWinningLine();
 }
 
 [Meta(typeof(IAutoNode))]
@@ -26,6 +31,9 @@ public partial class GridNode : Node3D, IGridNode {
   private Animation _animationSelect = default!;
   private int _animationHoverTrackIndex = default!;
   private int _animationSelectTrackIndex = default!;
+
+  public required Vector2I GridPosition { get; init; }
+  public int? SelectedByPlayerId { get; private set; }
 
   #region Signals
   [Signal]
@@ -91,9 +99,11 @@ public partial class GridNode : Node3D, IGridNode {
       .Handle((in GridNodeLogic.Output.HoverExited _) =>
         AnimationPlayer.PlayBackwards(ANIMATION_HOVER_NAME)
       )
-      .Handle((in GridNodeLogic.Output.Marked output) =>
-        ShowSelectedAnimation(output.PlayerId)
-      );
+      .Handle((in GridNodeLogic.Output.Marked output) => {
+        SelectedByPlayerId = output.PlayerId;
+        ShowSelectedAnimation(output.PlayerId);
+        GameRepo.GridNodeSelected(this);
+      });
 
     GridNodeLogic.Start();
   }
@@ -116,8 +126,13 @@ public partial class GridNode : Node3D, IGridNode {
   public void OnClicked(int currentPlayerId) =>
     GridNodeLogic.Input(new GridNodeLogic.Input.Select(currentPlayerId));
 
-  private void SetHoverAnimationsPlayerColor() {
+  public void OnGameOver() =>
+    GridNodeLogic.Input(new GridNodeLogic.Input.GameOver());
 
+  public void OnInWinningLine() =>
+    GridNodeLogic.Input(new GridNodeLogic.Input.InWinningLine());
+
+  private void SetHoverAnimationsPlayerColor() {
     var playerColor = GameRepo.GetCurrentPlayerColor();
     // Set how much of the player color should be applied on hover
     playerColor.A = 0.4f;
@@ -127,7 +142,7 @@ public partial class GridNode : Node3D, IGridNode {
     _animationHover.TrackSetKeyValue(_animationHoverTrackIndex, lastTrackKey, color);
   }
 
-  private int GetAnimationTrackIndex(Animation animation, string trackPath) {
+  private static int GetAnimationTrackIndex(Animation animation, string trackPath) {
     var trackIndex = animation.FindTrack(trackPath, Animation.TrackType.Value);
     return trackIndex == -1
       ? throw new InvalidOperationException($"{trackPath} track not found.")
@@ -143,10 +158,10 @@ public partial class GridNode : Node3D, IGridNode {
     SetAnimationLastTrackKeyColor(_animationSelect, _animationSelectTrackIndex, playerColor);
   }
 
-  private void SetAnimationFirsTrackKeyColor(Animation animation, int trackIndex, Color color) =>
+  private static void SetAnimationFirsTrackKeyColor(Animation animation, int trackIndex, Color color) =>
     animation.TrackSetKeyValue(trackIndex, 0, color);
 
-  private void SetAnimationLastTrackKeyColor(Animation animation, int trackIndex, Color color) {
+  private static void SetAnimationLastTrackKeyColor(Animation animation, int trackIndex, Color color) {
     var lastTrackKey = animation.TrackGetKeyCount(trackIndex) - 1;
     animation.TrackSetKeyValue(trackIndex, lastTrackKey, color);
   }
