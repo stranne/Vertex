@@ -5,6 +5,7 @@ using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
 using Godot;
 using Vertex.Game.Domain;
+using Vertex.Game.State;
 using Vertex.GridNode;
 
 public interface IGame : INode3D, IProvide<IGameRepo> { }
@@ -12,6 +13,10 @@ public interface IGame : INode3D, IProvide<IGameRepo> { }
 [Meta(typeof(IAutoNode))]
 public partial class Game : Node3D, IGame {
   public override void _Notification(int what) => this.Notify(what);
+
+  #region States
+  public IGameLogic GameLogic { get; set; } = default!;
+  public GameLogic.IBinding GameLogicBinding { get; set; } = default!;
 
   public IGameRepo GameRepo { get; set; } = default!;
   IGameRepo IProvide<IGameRepo>.Value() => GameRepo;
@@ -21,6 +26,7 @@ public partial class Game : Node3D, IGame {
     new(1, 0, 0),
     new(0, 1, 0),
   ];
+  #endregion
 
   #region Nodes
   [Node]
@@ -42,12 +48,29 @@ public partial class Game : Node3D, IGame {
     this.Provide();
   }
 
+  public void OnResolved() {
+    GameLogic = new GameLogic();
+    GameLogic.Set(GameRepo);
+
+    GameLogicBinding = GameLogic.Bind();
+
+    GameLogicBinding
+      .Handle((in GameLogic.Output.AddNewGridNodes output) =>
+        output.GridNodes.ForEach(gridNode => GridBoard.AddChild((Node3D)gridNode))
+      )
+      .Handle((in GameLogic.Output.Starting _) =>
+        GameRepo.Reset()
+      );
+
+    GameLogic.Start();
+  }
+
   public override void _Process(double delta) => HandleGridNodeMouseEvents();
 
   public void HandleGridNodeMouseEvents() {
     var mousePosition = GetViewport().GetMousePosition();
     var from = Camera.ProjectRayOrigin(mousePosition);
-    var to = Camera.ProjectRayNormal(mousePosition) * 1000;
+    var to = Camera.ProjectRayNormal(mousePosition) * Camera.Position.Z * 2;
 
     RayCast.GlobalPosition = from;
     RayCast.TargetPosition = to - from;

@@ -33,6 +33,7 @@ public partial class GridNode : Node3D, IGridNode {
   private int _animationSelectTrackIndex = default!;
 
   public required Vector2I GridPosition { get; init; }
+  // TODO replace with "Color? Color"
   public int? SelectedByPlayerId { get; private set; }
 
   #region Signals
@@ -65,6 +66,8 @@ public partial class GridNode : Node3D, IGridNode {
   #endregion
 
   public void Setup() {
+    Position = new Vector3(GridPosition.X, 0, GridPosition.Y);
+
     GridNodeLogic = new GridNodeLogic();
 
     _pyramidMaterialColor = GetCurrentMaterialColor();

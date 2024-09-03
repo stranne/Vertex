@@ -7,21 +7,23 @@ using Godot;
 using Vertex.GridNode;
 
 public interface IGameRepo : IDisposable {
-  event Action<IGridNode[]>? AddNewGridNodes;
+  event Action<List<Vector2I>>? PopulateGridPositions;
 
   void MouseEvent(IGridNode? gridNodeHovered, bool isLeftMouseButtonPressed);
   Color GetCurrentPlayerColor();
   Color GetPlayerColor(int playerId);
   void GridNodeSelected(IGridNode gridNode);
+  void Reset();
 }
 
 public class GameRepo(Color[] playerColors) : IGameRepo {
+  // TODO remove and replace with signals?
   private readonly Dictionary<Vector2I, IGridNode> _grid = [];
 
   private IGridNode? _gridNodeHovered;
   private int CurrentPlayerId { get; set; }
 
-  public event Action<IGridNode[]>? AddNewGridNodes;
+  public event Action<List<Vector2I>>? PopulateGridPositions;
 
   public void MouseEvent(IGridNode? gridNodeHovered, bool isLeftMouseButtonPressed) {
     if (isLeftMouseButtonPressed) {
@@ -41,6 +43,15 @@ public class GameRepo(Color[] playerColors) : IGameRepo {
 
   public Color GetPlayerColor(int playerId) => playerColors[playerId];
 
+  public void Reset() {
+    // TODO Remove existing grid nodes, and ensure single one in center.
+    var gridNodesToRemove = _grid.Where(grid => grid.Key != Vector2I.Zero);
+    foreach (var (gridPosition, gridNode) in gridNodesToRemove) {
+      gridNode.QueueFree();
+      _grid.Remove(gridPosition);
+    }
+  }
+
   public void GridNodeSelected(IGridNode gridNode) {
     var gridPosition = gridNode.GridPosition;
     _grid[gridPosition] = gridNode;
@@ -49,18 +60,23 @@ public class GameRepo(Color[] playerColors) : IGameRepo {
 
     var gameHasEnded = CheckWinningConditions(gridPosition, playerId);
     if (!gameHasEnded) {
-      CurrentPlayerId = playerId++ % playerColors.Length;
+      ChangeToNextPlayer(playerId);
+      var emptyNeighborGridPositions = GetEmptyNeighborGridPositions(gridPosition).ToList();
+      PopulateGridPositions?.Invoke(emptyNeighborGridPositions);
     }
   }
+
+  private void ChangeToNextPlayer(int playerId) =>
+    CurrentPlayerId = playerId++ % playerColors.Length;
 
   private bool CheckWinningConditions(Vector2I gridPosition, int playerId) {
     var gameHasEnded = false;
 
     Vector2I[] directions = [
-      new(1, 0),
-      new(0, 1),
-      new(1, 1),
-      new(1, -1),
+      new(1, 0), // Horizontal
+      new(0, 1), // Vertical
+      new(1, 1), // Diagonal (top-left to bottom-right)
+      new(1, -1), // Diagonal (bottom-left to top-right)
     ];
 
     foreach (var direction in directions) {
@@ -96,13 +112,25 @@ public class GameRepo(Color[] playerColors) : IGameRepo {
       .ToList()
       .ForEach(gridNode => gridNode.OnInWinningLine());
 
-  private void CreateNewGridNodes(Vector2I[] gridPositions) {
-    var newGridNodes = gridPositions.Select(gridPosition => new GridNode {
-      GridPosition = gridPosition
-    }).ToList();
+  private IEnumerable<Vector2I> GetEmptyNeighborGridPositions(Vector2I gridPosition) {
+    Vector2I[] neighborOffsets = [
+      new (-1, -1),
+      new (-1, 0),
+      new (-1, 1),
+      new (0, -1),
+      new (0, 1),
+      new (1, -1),
+      new (1, 0),
+      new (1, 1)
+    ];
 
-    newGridNodes.ForEach(gridNode => _grid[gridNode.GridPosition] = gridNode);
-    AddNewGridNodes?.Invoke([.. newGridNodes]);
+    foreach (var offset in neighborOffsets) {
+      var neighborPosition = gridPosition + offset;
+
+      if (!_grid.ContainsKey(neighborPosition)) {
+        yield return neighborPosition;
+      }
+    }
   }
 
   public void Dispose() => GC.SuppressFinalize(this);
