@@ -7,10 +7,8 @@ public partial class GridNodeLogic {
   public abstract partial record State {
     [Meta]
     public partial record Marked : State, IGet<Input.GameOver>, IGet<Input.InWinningLine>, IGet<Input.Restart> {
-      public int SelectedPlayerId { get; set; } = default!;
-
       public Marked() {
-        this.OnEnter(() => Output(new Output.Marked(SelectedPlayerId)));
+        this.OnEnter(() => Output(new Output.Selected(Get<Data>().Color!.Value)));
       }
 
       public Transition On(in Input.GameOver input) => To<MarkedDisabled>();

@@ -1,8 +1,8 @@
 @startuml GameLogic
 state "GameLogic State" as Vertex_Game_State_GameLogic_State {
-  state "Playing" as Vertex_Game_State_GameLogic_State_Playing
   state "GameOver" as Vertex_Game_State_GameLogic_State_GameOver
   state "Menu" as Vertex_Game_State_GameLogic_State_Menu
+  state "Playing" as Vertex_Game_State_GameLogic_State_Playing
 }
 
 Vertex_Game_State_GameLogic_State_GameOver --> Vertex_Game_State_GameLogic_State_Playing : Restart
@@ -10,8 +10,8 @@ Vertex_Game_State_GameLogic_State_Menu --> Vertex_Game_State_GameLogic_State_Pla
 Vertex_Game_State_GameLogic_State_Playing --> Vertex_Game_State_GameLogic_State_GameOver : GameOver
 
 Vertex_Game_State_GameLogic_State_GameOver : OnEnter → Ending
-Vertex_Game_State_GameLogic_State_Playing : OnAddNewGridNodes() → AddNewGridNodes
-Vertex_Game_State_GameLogic_State_Playing : OnEnter → Starting
+Vertex_Game_State_GameLogic_State_Playing : OnEnter → NewGame
+Vertex_Game_State_GameLogic_State_Playing : OnPopulateGridPositions() → AddNewGridNodes
 
 [*] --> Vertex_Game_State_GameLogic_State_Playing
 @enduml

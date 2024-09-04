@@ -5,5 +5,7 @@ using Chickensoft.LogicBlocks;
 
 public partial class GridNodeLogic {
   [Meta]
-  public abstract partial record State : StateLogic<State> { }
+  public abstract partial record State : StateLogic<State> {
+    public Data Data => Get<Data>();
+  }
 }

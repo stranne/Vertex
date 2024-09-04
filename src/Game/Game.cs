@@ -55,19 +55,22 @@ public partial class Game : Node3D, IGame {
     GameLogicBinding = GameLogic.Bind();
 
     GameLogicBinding
-      .Handle((in GameLogic.Output.AddNewGridNodes output) =>
-        output.GridNodes.ForEach(gridNode => GridBoard.AddChild((Node3D)gridNode))
+      .Handle((in GameLogic.Output.NewGame _) =>
+        GameRepo.StartNewGame()
       )
-      .Handle((in GameLogic.Output.Starting _) =>
-        GameRepo.Reset()
-      );
+      .Handle((in GameLogic.Output.AddNewGridNodes output) => {
+        // output.GridPositions.ForEach(gridNode => GridBoard.AddChild((Node3D)gridNode))
+      })
+      .Handle((in GameLogic.Output.Ending _) => {
+        // TODO view game over screen
+      });
 
     GameLogic.Start();
   }
 
-  public override void _Process(double delta) => HandleGridNodeMouseEvents();
+  public override void _Process(double delta) => HandleGridNodeHoverAndClick();
 
-  public void HandleGridNodeMouseEvents() {
+  public void HandleGridNodeHoverAndClick() {
     var mousePosition = GetViewport().GetMousePosition();
     var from = Camera.ProjectRayOrigin(mousePosition);
     var to = Camera.ProjectRayNormal(mousePosition) * Camera.Position.Z * 2;
@@ -76,8 +79,9 @@ public partial class Game : Node3D, IGame {
     RayCast.TargetPosition = to - from;
 
     RayCast.ForceRaycastUpdate();
-    var gridNode = (RayCast.GetCollider() as Node)?.GetParent()?.GetParent<IGridNode>();
+    var collidedNode = RayCast.GetCollider() as Node;
+    var gridPosition = collidedNode?.GetParent()?.GetParent<IGridNode>()?.GridPosition;
     var isLeftMouseButtonPressed = Input.IsActionJustPressed("mouse_left_click");
-    GameRepo.MouseEvent(gridNode, isLeftMouseButtonPressed);
+    GameRepo.MouseEvent(gridPosition, isLeftMouseButtonPressed);
   }
 }

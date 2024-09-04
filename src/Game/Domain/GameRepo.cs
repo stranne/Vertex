@@ -4,73 +4,70 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
-using Vertex.GridNode;
 
 public interface IGameRepo : IDisposable {
+  event Action? NewGame;
+  event Action<Vector2I?, Color>? GridNodeHovered;
+  event Action<Vector2I>? GridNodeClicked;
   event Action<List<Vector2I>>? PopulateGridPositions;
+  event Action<List<Vector2I>>? GameEnded;
 
-  void MouseEvent(IGridNode? gridNodeHovered, bool isLeftMouseButtonPressed);
-  Color GetCurrentPlayerColor();
-  Color GetPlayerColor(int playerId);
-  void GridNodeSelected(IGridNode gridNode);
-  void Reset();
+  void StartNewGame();
+  void MouseEvent(Vector2I? hoveredGridPosition, bool isLeftMouseButtonPressed);
+  void GridNodeSelected(Vector2I gridPosition);
 }
 
 public class GameRepo(Color[] playerColors) : IGameRepo {
-  // TODO remove and replace with signals?
-  private readonly Dictionary<Vector2I, IGridNode> _grid = [];
+  private const int NUMBER_IN_A_ROW_TO_WIN = 5;
 
-  private IGridNode? _gridNodeHovered;
-  private int CurrentPlayerId { get; set; }
-
+  public event Action? NewGame;
+  public event Action<Vector2I?, Color>? GridNodeHovered;
+  public event Action<Vector2I>? GridNodeClicked;
   public event Action<List<Vector2I>>? PopulateGridPositions;
+  public event Action<List<Vector2I>>? GameEnded;
 
-  public void MouseEvent(IGridNode? gridNodeHovered, bool isLeftMouseButtonPressed) {
-    if (isLeftMouseButtonPressed) {
-      _gridNodeHovered?.OnClicked(CurrentPlayerId);
+  /// <remarks>
+  /// <c>null</c> value indicates GridNode exists but isn't selected by any player.
+  /// </remarks>
+  private readonly Dictionary<Vector2I, int?> _grid = [];
+  private Vector2I? _hoveredGridPosition;
+  private int _currentPlayerId;
+
+  public void StartNewGame() {
+    _grid.Clear();
+    _grid[Vector2I.Zero] = null;
+    NewGame?.Invoke();
+  }
+
+  public void MouseEvent(Vector2I? hoveredGridPosition, bool isLeftMouseButtonPressed) {
+    if (_hoveredGridPosition != hoveredGridPosition) {
+      _hoveredGridPosition = hoveredGridPosition;
+      GridNodeHovered?.Invoke(hoveredGridPosition, playerColors[_currentPlayerId]);
     }
 
-    if (_gridNodeHovered == gridNodeHovered) {
+    if (isLeftMouseButtonPressed && hoveredGridPosition.HasValue) {
+      GridNodeClicked?.Invoke(hoveredGridPosition.Value);
+    }
+  }
+
+  public void GridNodeSelected(Vector2I gridPosition) {
+    _grid[gridPosition] = _currentPlayerId;
+
+    var positionsInWinningLines = GetPositionsInWinningLines(gridPosition, _currentPlayerId);
+    if (positionsInWinningLines.Count > 0) {
+      GameEnded?.Invoke(positionsInWinningLines);
       return;
     }
 
-    _gridNodeHovered?.OnHoverExit();
-    _gridNodeHovered = gridNodeHovered;
-    _gridNodeHovered?.OnHoverEnter();
+    ChangeToNextPlayer();
+    PopulateEmptyNeighborGridPositions(gridPosition);
   }
 
-  public Color GetCurrentPlayerColor() => GetPlayerColor(CurrentPlayerId);
+  private void ChangeToNextPlayer() =>
+    _currentPlayerId = _currentPlayerId++ % playerColors.Length;
 
-  public Color GetPlayerColor(int playerId) => playerColors[playerId];
-
-  public void Reset() {
-    // TODO Remove existing grid nodes, and ensure single one in center.
-    var gridNodesToRemove = _grid.Where(grid => grid.Key != Vector2I.Zero);
-    foreach (var (gridPosition, gridNode) in gridNodesToRemove) {
-      gridNode.QueueFree();
-      _grid.Remove(gridPosition);
-    }
-  }
-
-  public void GridNodeSelected(IGridNode gridNode) {
-    var gridPosition = gridNode.GridPosition;
-    _grid[gridPosition] = gridNode;
-    var playerId = gridNode.SelectedByPlayerId
-      ?? throw new InvalidOperationException("Grid node must be selected by a player.");
-
-    var gameHasEnded = CheckWinningConditions(gridPosition, playerId);
-    if (!gameHasEnded) {
-      ChangeToNextPlayer(playerId);
-      var emptyNeighborGridPositions = GetEmptyNeighborGridPositions(gridPosition).ToList();
-      PopulateGridPositions?.Invoke(emptyNeighborGridPositions);
-    }
-  }
-
-  private void ChangeToNextPlayer(int playerId) =>
-    CurrentPlayerId = playerId++ % playerColors.Length;
-
-  private bool CheckWinningConditions(Vector2I gridPosition, int playerId) {
-    var gameHasEnded = false;
+  private List<Vector2I> GetPositionsInWinningLines(Vector2I gridPosition, int playerId) {
+    var gridPositionsInLines = new List<Vector2I>();
 
     Vector2I[] directions = [
       new(1, 0), // Horizontal
@@ -85,32 +82,27 @@ public class GameRepo(Color[] playerColors) : IGameRepo {
       gridPositionsInLine.AddRange(CountInDirection(gridPosition, direction, playerId));
       gridPositionsInLine.AddRange(CountInDirection(gridPosition, -direction, playerId));
 
-      if (gridPositionsInLine.Count >= 5) {
-        gameHasEnded = true;
-        TriggerWinning(gridPositionsInLine);
+      if (gridPositionsInLine.Count >= NUMBER_IN_A_ROW_TO_WIN) {
+        gridPositionsInLines.AddRange(gridPositionsInLine);
       }
     }
 
-    if (gameHasEnded) {
-      _grid.Values.ToList().ForEach(gridNode => gridNode.OnGameOver());
-    }
-
-    return gameHasEnded;
+    return gridPositionsInLines;
   }
 
   private IEnumerable<Vector2I> CountInDirection(Vector2I startPosition, Vector2I direction, int playerId) {
     var currentPosition = startPosition + direction;
 
-    while (_grid.TryGetValue(currentPosition, out var gridNode) && gridNode.SelectedByPlayerId == playerId) {
+    while (_grid.TryGetValue(currentPosition, out var gridNodePlayer) && gridNodePlayer == playerId) {
       yield return currentPosition;
       currentPosition += direction;
     }
   }
 
-  private void TriggerWinning(IList<Vector2I> gridPositions) =>
-    gridPositions.Select(gridPosition => _grid[gridPosition])
-      .ToList()
-      .ForEach(gridNode => gridNode.OnInWinningLine());
+  private void PopulateEmptyNeighborGridPositions(Vector2I gridPosition) {
+    var emptyNeighborGridPositions = GetEmptyNeighborGridPositions(gridPosition).ToList();
+    PopulateGridPositions?.Invoke(emptyNeighborGridPositions);
+  }
 
   private IEnumerable<Vector2I> GetEmptyNeighborGridPositions(Vector2I gridPosition) {
     Vector2I[] neighborOffsets = [
