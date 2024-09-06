@@ -3,12 +3,13 @@ namespace Vertex.Game;
 using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
+using Chickensoft.LogicBlocks;
 using Godot;
 using Vertex.Game.Domain;
 using Vertex.Game.State;
 using Vertex.GridNode;
 
-public interface IGame : INode3D, IProvide<IGameRepo> { }
+public interface IGame : INode3D, IProvide<IGameRepo>, IProvide<IGridNodeMediator> { }
 
 [Meta(typeof(IAutoNode))]
 public partial class Game : Node3D, IGame {
@@ -21,11 +22,17 @@ public partial class Game : Node3D, IGame {
   public IGameRepo GameRepo { get; set; } = default!;
   IGameRepo IProvide<IGameRepo>.Value() => GameRepo;
 
+  public IGridNodeMediatorForGameRepo GridNodeMediator { get; set; } = default!;
+  IGridNodeMediator IProvide<IGridNodeMediator>.Value() => (IGridNodeMediator)GridNodeMediator;
+
   [Export]
   public Color[] PlayerColors = [
     new(1, 0, 0),
     new(0, 1, 0),
   ];
+
+  [Export]
+  public PackedScene GridNodeScene = default!;
   #endregion
 
   #region Nodes
@@ -43,7 +50,8 @@ public partial class Game : Node3D, IGame {
   #endregion
 
   public void Setup() {
-    GameRepo = new GameRepo(PlayerColors);
+    GridNodeMediator = new GridNodeMediator(GridNodeScene);
+    GameRepo = new GameRepo(PlayerColors, GridNodeMediator);
 
     this.Provide();
   }
@@ -61,7 +69,7 @@ public partial class Game : Node3D, IGame {
       .Handle((in GameLogic.Output.AddNewGridNodes output) => {
         // output.GridPositions.ForEach(gridNode => GridBoard.AddChild((Node3D)gridNode))
       })
-      .Handle((in GameLogic.Output.Ending _) => {
+      .Handle((in GameLogic.Output.Ending output) => {
         // TODO view game over screen
       });
 
@@ -80,8 +88,21 @@ public partial class Game : Node3D, IGame {
 
     RayCast.ForceRaycastUpdate();
     var collidedNode = RayCast.GetCollider() as Node;
-    var gridPosition = collidedNode?.GetParent()?.GetParent<IGridNode>()?.GridPosition;
+    var gridNode = GetClosestParent<IGridNode>(collidedNode);
+    var color = GameRepo.GetCurrentPlayerColor();
     var isLeftMouseButtonPressed = Input.IsActionJustPressed("mouse_left_click");
-    GameRepo.MouseEvent(gridPosition, isLeftMouseButtonPressed);
+    GridNodeMediator.MouseEvent(gridNode, color, isLeftMouseButtonPressed);
+  }
+
+  private static T? GetClosestParent<T>(Node? node) where T : class {
+    while (node != null) {
+      if (node is T targetNode) {
+        return targetNode;
+      }
+
+      node = node.GetParent();
+    }
+
+    return null;
   }
 }

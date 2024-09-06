@@ -5,6 +5,7 @@
 
 [node name="Game" type="Node3D"]
 script = ExtResource("1_17mmo")
+GridNodeScene = ExtResource("2_xmktu")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.836764, 0.547563, 0, -0.489854, 0.748575, 0.446854, 0.244681, -0.373911, 0.894607, 0, 0, 0)

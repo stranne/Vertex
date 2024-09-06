@@ -6,48 +6,24 @@ using System.Linq;
 using Godot;
 
 public interface IGameRepo : IDisposable {
-  event Action? NewGame;
-  event Action<Vector2I?, Color>? GridNodeHovered;
-  event Action<Vector2I>? GridNodeClicked;
-  event Action<List<Vector2I>>? PopulateGridPositions;
-  event Action<List<Vector2I>>? GameEnded;
-
   void StartNewGame();
-  void MouseEvent(Vector2I? hoveredGridPosition, bool isLeftMouseButtonPressed);
   void GridNodeSelected(Vector2I gridPosition);
+  Color GetCurrentPlayerColor();
 }
 
-public class GameRepo(Color[] playerColors) : IGameRepo {
+public class GameRepo(Color[] playerColors, IGridNodeMediatorForGameRepo gridNodeMediator) : IGameRepo {
   private const int NUMBER_IN_A_ROW_TO_WIN = 5;
-
-  public event Action? NewGame;
-  public event Action<Vector2I?, Color>? GridNodeHovered;
-  public event Action<Vector2I>? GridNodeClicked;
-  public event Action<List<Vector2I>>? PopulateGridPositions;
-  public event Action<List<Vector2I>>? GameEnded;
 
   /// <remarks>
   /// <c>null</c> value indicates GridNode exists but isn't selected by any player.
   /// </remarks>
   private readonly Dictionary<Vector2I, int?> _grid = [];
-  private Vector2I? _hoveredGridPosition;
   private int _currentPlayerId;
 
   public void StartNewGame() {
     _grid.Clear();
     _grid[Vector2I.Zero] = null;
-    NewGame?.Invoke();
-  }
-
-  public void MouseEvent(Vector2I? hoveredGridPosition, bool isLeftMouseButtonPressed) {
-    if (_hoveredGridPosition != hoveredGridPosition) {
-      _hoveredGridPosition = hoveredGridPosition;
-      GridNodeHovered?.Invoke(hoveredGridPosition, playerColors[_currentPlayerId]);
-    }
-
-    if (isLeftMouseButtonPressed && hoveredGridPosition.HasValue) {
-      GridNodeClicked?.Invoke(hoveredGridPosition.Value);
-    }
+    gridNodeMediator.NewGame();
   }
 
   public void GridNodeSelected(Vector2I gridPosition) {
@@ -55,7 +31,7 @@ public class GameRepo(Color[] playerColors) : IGameRepo {
 
     var positionsInWinningLines = GetPositionsInWinningLines(gridPosition, _currentPlayerId);
     if (positionsInWinningLines.Count > 0) {
-      GameEnded?.Invoke(positionsInWinningLines);
+      gridNodeMediator.GameEnded(positionsInWinningLines);
       return;
     }
 
@@ -101,7 +77,7 @@ public class GameRepo(Color[] playerColors) : IGameRepo {
 
   private void PopulateEmptyNeighborGridPositions(Vector2I gridPosition) {
     var emptyNeighborGridPositions = GetEmptyNeighborGridPositions(gridPosition).ToList();
-    PopulateGridPositions?.Invoke(emptyNeighborGridPositions);
+    gridNodeMediator.PopulateGridPositions(emptyNeighborGridPositions);
   }
 
   private IEnumerable<Vector2I> GetEmptyNeighborGridPositions(Vector2I gridPosition) {
@@ -124,6 +100,8 @@ public class GameRepo(Color[] playerColors) : IGameRepo {
       }
     }
   }
+
+  public Color GetCurrentPlayerColor() => playerColors[_currentPlayerId];
 
   public void Dispose() => GC.SuppressFinalize(this);
 }

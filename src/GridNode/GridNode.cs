@@ -9,7 +9,14 @@ using Vertex.Game.Domain;
 using Vertex.GridNode.State;
 
 public interface IGridNode : INode3D {
-  Vector2I GridPosition { get; }
+  Vector2I GridPosition { get; set; }
+
+  void Reset();
+  void HoverEnter(Color color);
+  void HoverExit();
+  void Clicked();
+  void InWinningLine();
+  void GameOver();
 }
 
 [Meta(typeof(IAutoNode))]
@@ -19,13 +26,13 @@ public partial class GridNode : Node3D, IGridNode {
 
   public override void _Notification(int what) => this.Notify(what);
 
+  public Vector2I GridPosition { get; set; } = default!;
+
   private Color _defaultMaterialColor = default!;
   private Animation _animationHover = default!;
   private Animation _animationSelect = default!;
   private int _animationHoverTrackIndex = default!;
   private int _animationSelectTrackIndex = default!;
-
-  public required Vector2I GridPosition { get; init; }
 
   #region Signals
   [Signal]
@@ -54,6 +61,9 @@ public partial class GridNode : Node3D, IGridNode {
   #region Dependencies
   [Dependency]
   public IGameRepo GameRepo => this.DependOn<IGameRepo>();
+
+  [Dependency]
+  public IGridNodeMediatorForGridNode GridNodeMediator => this.DependOn<IGridNodeMediator>();
   #endregion
 
   public void Setup() {
@@ -74,8 +84,6 @@ public partial class GridNode : Node3D, IGridNode {
   }
 
   public void OnResolved() {
-    GridNodeLogic.Set(GameRepo);
-
     GridNodeLogicBinding = GridNodeLogic.Bind();
 
     SpawnAnimated += OnSpawnAnimated;
@@ -115,22 +123,23 @@ public partial class GridNode : Node3D, IGridNode {
   public void OnSpawnAnimated() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.Spawned());
 
-  public void OnHoverEnter(Color color) =>
-    GridNodeLogic.Input(new GridNodeLogic.Input.HoverEnter() {
-      Color = color
-    });
+  public void Reset() =>
+    GridNodeLogic.Input(new GridNodeLogic.Input.Reset());
 
-  public void OnHoverExit() =>
+  public void HoverEnter(Color color) =>
+    GridNodeLogic.Input(new GridNodeLogic.Input.HoverEnter(color));
+
+  public void HoverExit() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.HoverExit());
 
-  public void OnClicked(int currentPlayerId) =>
+  public void Clicked() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.Select());
 
-  public void OnGameOver() =>
-    GridNodeLogic.Input(new GridNodeLogic.Input.GameOver());
-
-  public void OnInWinningLine() =>
+  public void InWinningLine() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.InWinningLine());
+
+  public void GameOver() =>
+    GridNodeLogic.Input(new GridNodeLogic.Input.GameOver());
 
   private void SetHoverAnimationsColor(Color color) {
     // Set how much of the color should be applied on hover

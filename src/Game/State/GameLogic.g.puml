@@ -11,7 +11,6 @@ Vertex_Game_State_GameLogic_State_Playing --> Vertex_Game_State_GameLogic_State_
 
 Vertex_Game_State_GameLogic_State_GameOver : OnEnter → Ending
 Vertex_Game_State_GameLogic_State_Playing : OnEnter → NewGame
-Vertex_Game_State_GameLogic_State_Playing : OnPopulateGridPositions() → AddNewGridNodes
 
 [*] --> Vertex_Game_State_GameLogic_State_Playing
 @enduml

@@ -14,7 +14,7 @@ public partial class GridNodeLogic {
     #region Marked
     public readonly record struct InWinningLine;
     public readonly record struct GameOver;
-    public readonly record struct Restart;
+    public readonly record struct Reset;
     #endregion
   }
 }
