@@ -8,7 +8,10 @@ public partial class GridNodeLogic {
   public abstract partial record State {
     [Meta]
     public partial record Idle : Unmarked, IGet<Input.HoverEnter> {
-      public Transition On(in Input.HoverEnter input) => To<Hover>();
+      public Transition On(in Input.HoverEnter input) {
+        Get<Data>().Color = input.Color;
+        return To<Hover>();
+      }
     }
   }
 }

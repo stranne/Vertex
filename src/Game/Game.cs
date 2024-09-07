@@ -87,8 +87,10 @@ public partial class Game : Node3D, IGame {
         MenuStart.Visible = false;
         GameRepo.StartNewGame();
       })
-      .Handle((in GameLogic.Output.AddNewGridNode output) =>
-        GridBoard.AddChild((Node3D)output.GridNode))
+      .Handle((in GameLogic.Output.AddNewGridNode output) => {
+        GameRepo.AddGridNode(output.GridPosition);
+        GridBoard.AddChild((Node3D)output.GridNode);
+      })
       .Handle((in GameLogic.Output.Ending output) => {
         // TODO view game over screen
         MenuGameEnded.Visible = true;
@@ -106,7 +108,7 @@ public partial class Game : Node3D, IGame {
   public void HandleGridNodeHoverAndClick() {
     var mousePosition = GetViewport().GetMousePosition();
     var from = Camera.ProjectRayOrigin(mousePosition);
-    var to = Camera.ProjectRayNormal(mousePosition) * Camera.Position.Z * 2;
+    var to = Camera.ProjectRayNormal(mousePosition) * Camera.Position.Y * 2;
 
     RayCast.GlobalPosition = from;
     RayCast.TargetPosition = to - from;
@@ -114,10 +116,8 @@ public partial class Game : Node3D, IGame {
     RayCast.ForceRaycastUpdate();
     var collidedNode = RayCast.GetCollider() as Node;
     var gridNode = GetClosestParent<IGridNode>(collidedNode);
-    var color = GameRepo.GetCurrentPlayerColor();
     var isLeftMouseButtonPressed = Input.IsActionJustPressed("mouse_left_click");
-    // TODO GameRepo instead
-    GridNodeMediator.MouseEvent(gridNode, color, isLeftMouseButtonPressed);
+    GameRepo.MouseEvent(gridNode, isLeftMouseButtonPressed);
   }
 
   public void OnStartGame() => GameLogic.Input(new GameLogic.Input.StartGame());

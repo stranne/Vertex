@@ -14,7 +14,7 @@ public interface IGridNode : INode3D {
   void Reset();
   void HoverEnter(Color color);
   void HoverExit();
-  void Clicked();
+  void Select();
   void InWinningLine();
   void GameOver();
 }
@@ -106,12 +106,10 @@ public partial class GridNode : Node3D, IGridNode {
         AnimationPlayer.Play(ANIMATION_HOVER_NAME);
       })
       .Handle((in GridNodeLogic.Output.HoverExited _) =>
-        AnimationPlayer.PlayBackwards(ANIMATION_HOVER_NAME)
-      )
-      .Handle((in GridNodeLogic.Output.Selected output) => {
-        ShowSelectedAnimation(output.Color);
-        GameRepo.GridNodeSelected(GridPosition);
-      });
+        AnimationPlayer.PlayBackwards(ANIMATION_HOVER_NAME))
+      .Handle((in GridNodeLogic.Output.Selected output) =>
+        ShowSelectedAnimation(output.Color)
+      );
 
     GridNodeLogic.Start();
   }
@@ -136,7 +134,7 @@ public partial class GridNode : Node3D, IGridNode {
   public void HoverExit() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.HoverExit());
 
-  public void Clicked() =>
+  public void Select() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.Select());
 
   public void InWinningLine() =>

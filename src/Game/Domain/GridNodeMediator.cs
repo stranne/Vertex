@@ -6,30 +6,23 @@ using System.Linq;
 using Godot;
 using Vertex.GridNode;
 
-// TODO merge interfaces
+public interface IGridNodeMediator : IDisposable {
+  event Action<Vector2I, IGridNode>? AddNewGridNode;
 
-public interface IGridNodeMediatorForGameRepo {
-  event Action<IGridNode>? AddNewGridNode;
+  void NewGame();
+  Vector2I GetGridNodePosition(IGridNode gridNode);
+  void SelectGridNode(Vector2I gridPosition);
+  void PopulateGridPositions(List<Vector2I> gridPositions);
+  void GameEnded(List<Vector2I> inWinningLineGridPositions);
 
-  public void NewGame();
-  public void MouseEvent(IGridNode? hoveredGridNode, Color color, bool isLeftMouseButtonPressed);
-  public void PopulateGridPositions(List<Vector2I> gridPositions);
-  public void GameEnded(List<Vector2I> inWinningLineGridPositions);
-}
-
-public interface IGridNodeMediatorForGridNode {
   void Register(Vector2I gridPosition, IGridNode gridNode);
   void Unregister(Vector2I gridPosition);
 }
 
-public interface IGridNodeMediator : IGridNodeMediatorForGameRepo, IGridNodeMediatorForGridNode, IDisposable { }
-
 public class GridNodeMediator(PackedScene gridNodeScene) : IGridNodeMediator {
   private readonly Dictionary<Vector2I, IGridNode> _grid = [];
 
-  private IGridNode? _hoveredGridNode;
-
-  public event Action<IGridNode>? AddNewGridNode;
+  public event Action<Vector2I, IGridNode>? AddNewGridNode;
 
   public void NewGame() {
     var centerGridNode = Vector2I.Zero;
@@ -51,17 +44,11 @@ public class GridNodeMediator(PackedScene gridNodeScene) : IGridNodeMediator {
     _grid[centerGridNode].Reset();
   }
 
-  public void MouseEvent(IGridNode? hoveredGridNode, Color color, bool isLeftMouseButtonPressed) {
-    if (_hoveredGridNode != hoveredGridNode) {
-      _hoveredGridNode?.HoverExit();
-      _hoveredGridNode = hoveredGridNode;
-      _hoveredGridNode?.HoverEnter(color);
-    }
+  public Vector2I GetGridNodePosition(IGridNode gridNode) =>
+    _grid.Single(grid => grid.Value == gridNode).Key;
 
-    if (isLeftMouseButtonPressed && hoveredGridNode != null) {
-      hoveredGridNode.Clicked();
-    }
-  }
+  public void SelectGridNode(Vector2I gridPosition) =>
+    _grid[gridPosition].Select();
 
   public void PopulateGridPositions(List<Vector2I> gridPositions) {
     foreach (var gridPosition in gridPositions) {
@@ -97,9 +84,10 @@ public class GridNodeMediator(PackedScene gridNodeScene) : IGridNodeMediator {
   }
 
   private void CreateNewGridNode(Vector2I gridPosition) {
-    var newGridNode = gridNodeScene.Instantiate<IGridNode>();
+    var newGridNode = gridNodeScene.Instantiate<GridNode>();
+    newGridNode.Name = $"GridNode_{gridPosition}";
     newGridNode.GridPosition = gridPosition;
-    AddNewGridNode?.Invoke(newGridNode);
+    AddNewGridNode?.Invoke(gridPosition, newGridNode);
   }
 
   public void Dispose() => GC.SuppressFinalize(this);

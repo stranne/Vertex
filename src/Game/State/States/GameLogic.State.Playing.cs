@@ -2,6 +2,7 @@ namespace Vertex.Game.State;
 
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
+using Godot;
 using Vertex.Game.Domain;
 using Vertex.GridNode;
 
@@ -23,8 +24,8 @@ public partial class GameLogic {
 
       public Transition On(in Input.GameOver input) => To<GameOver>();
 
-      public void OnAddNewGridNode(IGridNode gridNode) =>
-        Output(new Output.AddNewGridNode(gridNode));
+      public void OnAddNewGridNode(Vector2I gridPosition, IGridNode gridNode) =>
+        Output(new Output.AddNewGridNode(gridPosition, gridNode));
     }
   }
 }

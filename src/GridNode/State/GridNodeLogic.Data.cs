@@ -4,7 +4,7 @@ using Godot;
 
 public partial class GridNodeLogic {
   public record Data {
-    public Vector2I GridPosition { get; set; }
+    public required Vector2I GridPosition { get; init; }
     public Color? Color { get; set; }
   };
 }

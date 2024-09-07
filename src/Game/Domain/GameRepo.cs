@@ -3,31 +3,77 @@ namespace Vertex.Game.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Chickensoft.GoDotLog;
 using Godot;
+using Vertex.GridNode;
 
 public interface IGameRepo : IDisposable {
   void StartNewGame();
-  void GridNodeSelected(Vector2I gridPosition);
+  void MouseEvent(IGridNode? hoveredGridNode, bool isLeftMouseButtonPressed);
+  void AddGridNode(Vector2I gridPosition);
   Color GetCurrentPlayerColor();
 }
 
-public class GameRepo(Color[] playerColors, IGridNodeMediatorForGameRepo gridNodeMediator) : IGameRepo {
+public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) : IGameRepo {
   private const int NUMBER_IN_A_ROW_TO_WIN = 5;
+
+  private ILog _log = new GDLog(nameof(GameRepo));
+
 
   /// <remarks>
   /// <c>null</c> value indicates GridNode exists but isn't selected by any player.
   /// </remarks>
   private readonly Dictionary<Vector2I, int?> _grid = [];
+  private IGridNode? _hoveredGridNode;
   private int _currentPlayerId;
 
   public void StartNewGame() {
-    _grid.Clear();
-    _grid[Vector2I.Zero] = null;
+    if (_grid.Count != 0) {
+      _grid.Clear();
+      _grid[Vector2I.Zero] = null;
+    }
+
     gridNodeMediator.NewGame();
   }
 
-  public void GridNodeSelected(Vector2I gridPosition) {
+  public void MouseEvent(IGridNode? hoveredGridNode, bool isLeftMouseButtonPressed) {
+    if (_hoveredGridNode != hoveredGridNode) {
+#if DEBUG
+      var previous = _hoveredGridNode == null
+        ? "null"
+        : gridNodeMediator.GetGridNodePosition(_hoveredGridNode).ToString();
+      var next = hoveredGridNode == null
+        ? "null"
+        : gridNodeMediator.GetGridNodePosition(hoveredGridNode).ToString();
+      _log.Print($"Hovered GridNode: last {previous}, new {next}");
+#endif
+      _hoveredGridNode?.HoverExit();
+      _hoveredGridNode = hoveredGridNode;
+      _hoveredGridNode?.HoverEnter(GetCurrentPlayerColor());
+    }
+
+    if (isLeftMouseButtonPressed && hoveredGridNode != null) {
+      var gridPosition = gridNodeMediator.GetGridNodePosition(hoveredGridNode);
+      if (_grid[gridPosition] != null) {
+        // Grid position already selected, ignoring click.
+        return;
+      }
+
+      GridNodeSelected(gridPosition);
+    }
+  }
+
+  public void AddGridNode(Vector2I gridPosition) {
+    if (_grid.ContainsKey(gridPosition)) {
+      throw new InvalidOperationException($"GridNode already exists at {gridPosition}");
+    }
+
+    _grid[gridPosition] = null;
+  }
+
+  private void GridNodeSelected(Vector2I gridPosition) {
     _grid[gridPosition] = _currentPlayerId;
+    gridNodeMediator.SelectGridNode(gridPosition);
 
     var positionsInWinningLines = GetPositionsInWinningLines(gridPosition, _currentPlayerId);
     if (positionsInWinningLines.Count > 0) {
