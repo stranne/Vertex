@@ -63,6 +63,7 @@ public partial class Game : Node3D, IGame {
 
     MenuStart.StartGame += OnStartGame;
     MenuGameEnded.Restart += OnRestart;
+    GameRepo.GameEnded += OnGameEnded;
 
     this.Provide();
   }
@@ -73,6 +74,7 @@ public partial class Game : Node3D, IGame {
 
     MenuStart.StartGame -= OnStartGame;
     MenuGameEnded.Restart -= OnRestart;
+    GameRepo.GameEnded -= OnGameEnded;
   }
 
   public void OnResolved() {
@@ -85,6 +87,7 @@ public partial class Game : Node3D, IGame {
     GameLogicBinding
       .Handle((in GameLogic.Output.NewGame _) => {
         MenuStart.Visible = false;
+        MenuGameEnded.Visible = false;
         GameRepo.StartNewGame();
       })
       .Handle((in GameLogic.Output.AddNewGridNode output) => {
@@ -94,10 +97,6 @@ public partial class Game : Node3D, IGame {
       .Handle((in GameLogic.Output.Ending output) => {
         // TODO view game over screen
         MenuGameEnded.Visible = true;
-      })
-      .Handle((in GameLogic.Output.Restart _) => {
-        MenuGameEnded.Visible = false;
-        // TODO restart
       });
 
     GameLogic.Start();
@@ -123,6 +122,8 @@ public partial class Game : Node3D, IGame {
   public void OnStartGame() => GameLogic.Input(new GameLogic.Input.StartGame());
 
   public void OnRestart() => GameLogic.Input(new GameLogic.Input.Restart());
+
+  public void OnGameEnded() => GameLogic.Input(new GameLogic.Input.GameEnded());
 
   private static T? GetClosestParent<T>(Node? node) where T : class {
     while (node != null) {

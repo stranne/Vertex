@@ -8,6 +8,8 @@ using Godot;
 using Vertex.GridNode;
 
 public interface IGameRepo : IDisposable {
+  event Action GameEnded;
+
   void StartNewGame();
   void MouseEvent(IGridNode? hoveredGridNode, bool isLeftMouseButtonPressed);
   void AddGridNode(Vector2I gridPosition);
@@ -25,6 +27,8 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
   private readonly Dictionary<Vector2I, int?> _grid = [];
   private IGridNode? _hoveredGridNode;
   private int _currentPlayerId;
+
+  public event Action GameEnded;
 
   public void StartNewGame() {
     if (_grid.Count != 0) {
@@ -71,6 +75,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
     if (positionsInWinningLines.Count > 0) {
       _log.Print($"Player {_currentPlayerId} won with {positionsInWinningLines.Count} in a row. Positions: {string.Join(", ", positionsInWinningLines)}");
       gridNodeMediator.GameEnded(positionsInWinningLines);
+      GameEnded?.Invoke();
       return;
     }
 

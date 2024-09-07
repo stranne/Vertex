@@ -8,6 +8,5 @@ public partial class GameLogic {
     public readonly record struct NewGame;
     public readonly record struct AddNewGridNode(Vector2I GridPosition, IGridNode GridNode);
     public readonly record struct Ending;
-    public readonly record struct Restart;
   }
 }

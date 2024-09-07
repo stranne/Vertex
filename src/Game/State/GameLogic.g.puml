@@ -1,15 +1,15 @@
 @startuml GameLogic
 state "GameLogic State" as Vertex_Game_State_GameLogic_State {
-  state "GameOver" as Vertex_Game_State_GameLogic_State_GameOver
+  state "GameEnded" as Vertex_Game_State_GameLogic_State_GameEnded
   state "Menu" as Vertex_Game_State_GameLogic_State_Menu
   state "Playing" as Vertex_Game_State_GameLogic_State_Playing
 }
 
-Vertex_Game_State_GameLogic_State_GameOver --> Vertex_Game_State_GameLogic_State_Playing : Restart
+Vertex_Game_State_GameLogic_State_GameEnded --> Vertex_Game_State_GameLogic_State_Playing : Restart
 Vertex_Game_State_GameLogic_State_Menu --> Vertex_Game_State_GameLogic_State_Playing : StartGame
-Vertex_Game_State_GameLogic_State_Playing --> Vertex_Game_State_GameLogic_State_GameOver : GameOver
+Vertex_Game_State_GameLogic_State_Playing --> Vertex_Game_State_GameLogic_State_GameEnded : GameEnded
 
-Vertex_Game_State_GameLogic_State_GameOver : OnEnter → Ending
+Vertex_Game_State_GameLogic_State_GameEnded : OnEnter → Ending
 Vertex_Game_State_GameLogic_State_Playing : OnAddNewGridNode() → AddNewGridNode
 Vertex_Game_State_GameLogic_State_Playing : OnEnter → NewGame
 

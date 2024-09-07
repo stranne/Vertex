@@ -9,7 +9,7 @@ using Vertex.GridNode;
 public partial class GameLogic {
   public abstract partial record State {
     [Meta]
-    public partial record Playing : State, IGet<Input.GameOver> {
+    public partial record Playing : State, IGet<Input.GameEnded> {
       public Playing() {
         OnAttach(() => {
           var gridNodeMediator = Get<IGridNodeMediator>();
@@ -22,7 +22,7 @@ public partial class GameLogic {
         this.OnEnter(() => Output(new Output.NewGame()));
       }
 
-      public Transition On(in Input.GameOver input) => To<GameOver>();
+      public Transition On(in Input.GameEnded _) => To<GameEnded>();
 
       public void OnAddNewGridNode(Vector2I gridPosition, IGridNode gridNode) =>
         Output(new Output.AddNewGridNode(gridPosition, gridNode));
