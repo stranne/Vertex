@@ -17,8 +17,7 @@ public interface IGameRepo : IDisposable {
 public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) : IGameRepo {
   private const int NUMBER_IN_A_ROW_TO_WIN = 5;
 
-  private ILog _log = new GDLog(nameof(GameRepo));
-
+  private readonly ILog _log = new GDLog(nameof(GameRepo));
 
   /// <remarks>
   /// <c>null</c> value indicates GridNode exists but isn't selected by any player.
@@ -38,15 +37,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
 
   public void MouseEvent(IGridNode? hoveredGridNode, bool isLeftMouseButtonPressed) {
     if (_hoveredGridNode != hoveredGridNode) {
-#if DEBUG
-      var previous = _hoveredGridNode == null
-        ? "null"
-        : gridNodeMediator.GetGridNodePosition(_hoveredGridNode).ToString();
-      var next = hoveredGridNode == null
-        ? "null"
-        : gridNodeMediator.GetGridNodePosition(hoveredGridNode).ToString();
-      _log.Print($"Hovered GridNode: last {previous}, new {next}");
-#endif
+      _log.Print($"Hovering: {_hoveredGridNode?.Name ?? "null"} -> {hoveredGridNode?.Name ?? "null"}");
       _hoveredGridNode?.HoverExit();
       _hoveredGridNode = hoveredGridNode;
       _hoveredGridNode?.HoverEnter(GetCurrentPlayerColor());
@@ -59,6 +50,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
         return;
       }
 
+      _log.Print($"Selecting: {hoveredGridNode.Name}");
       GridNodeSelected(gridPosition);
     }
   }
@@ -77,6 +69,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
 
     var positionsInWinningLines = GetPositionsInWinningLines(gridPosition, _currentPlayerId);
     if (positionsInWinningLines.Count > 0) {
+      _log.Print($"Player {_currentPlayerId} won with {positionsInWinningLines.Count} in a row. Positions: {string.Join(", ", positionsInWinningLines)}");
       gridNodeMediator.GameEnded(positionsInWinningLines);
       return;
     }
@@ -86,7 +79,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
   }
 
   private void ChangeToNextPlayer() =>
-    _currentPlayerId = _currentPlayerId++ % playerColors.Length;
+    _currentPlayerId = (_currentPlayerId + 1) % playerColors.Length;
 
   private List<Vector2I> GetPositionsInWinningLines(Vector2I gridPosition, int playerId) {
     var gridPositionsInLines = new List<Vector2I>();

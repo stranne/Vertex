@@ -108,7 +108,7 @@ public partial class Game : Node3D, IGame {
   public void HandleGridNodeHoverAndClick() {
     var mousePosition = GetViewport().GetMousePosition();
     var from = Camera.ProjectRayOrigin(mousePosition);
-    var to = Camera.ProjectRayNormal(mousePosition) * Camera.Position.Y * 2;
+    var to = Camera.ProjectRayNormal(mousePosition) * 1000;
 
     RayCast.GlobalPosition = from;
     RayCast.TargetPosition = to - from;

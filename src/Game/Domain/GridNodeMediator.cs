@@ -72,6 +72,10 @@ public class GridNodeMediator(PackedScene gridNodeScene) : IGridNodeMediator {
       throw new ArgumentException($"Grid position {gridPosition} already exists.", nameof(gridPosition));
     }
 
+    if (_grid.ContainsValue(gridNode)) {
+      throw new ArgumentException($"GridNode {gridNode} already exists.", nameof(gridNode));
+    }
+
     _grid[gridPosition] = gridNode;
   }
 

@@ -74,7 +74,12 @@ public partial class GridNode : Node3D, IGridNode {
       GridPosition = GridPosition
     });
 
-    _defaultMaterialColor = GetCurrentMaterialColor();
+    var material = (StandardMaterial3D)Pyramid.GetSurfaceOverrideMaterial(0).Duplicate();
+    // Duplicate material to avoid changing all instances of the material at the same time
+    var uniqueMaterial = (StandardMaterial3D)material.Duplicate();
+    Pyramid.SetSurfaceOverrideMaterial(0, uniqueMaterial);
+    _defaultMaterialColor = uniqueMaterial.AlbedoColor;
+
     _animationHover = AnimationPlayer.GetAnimation(ANIMATION_HOVER_NAME);
     _animationSelect = AnimationPlayer.GetAnimation(ANIMATION_SELECT_NAME);
     _animationHoverTrackIndex = GetAnimationTrackIndex(_animationHover, "Pyramid:surface_material_override/0:albedo_color");
