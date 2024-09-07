@@ -3,12 +3,13 @@ namespace Vertex.Game.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Chickensoft.GodotNodeInterfaces;
 using Godot;
 using Vertex.GridNode;
 
+// TODO merge interfaces
+
 public interface IGridNodeMediatorForGameRepo {
-  event Action<INode3D>? AddNewGridNode;
+  event Action<IGridNode>? AddNewGridNode;
 
   public void NewGame();
   public void MouseEvent(IGridNode? hoveredGridNode, Color color, bool isLeftMouseButtonPressed);
@@ -28,7 +29,7 @@ public class GridNodeMediator(PackedScene gridNodeScene) : IGridNodeMediator {
 
   private IGridNode? _hoveredGridNode;
 
-  public event Action<INode3D>? AddNewGridNode;
+  public event Action<IGridNode>? AddNewGridNode;
 
   public void NewGame() {
     var centerGridNode = Vector2I.Zero;

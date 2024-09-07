@@ -9,7 +9,7 @@ using Vertex.Game.Domain;
 using Vertex.GridNode.State;
 
 public interface IGridNode : INode3D {
-  Vector2I GridPosition { get; set; }
+  Vector2I GridPosition { set; }
 
   void Reset();
   void HoverEnter(Color color);
@@ -63,7 +63,7 @@ public partial class GridNode : Node3D, IGridNode {
   public IGameRepo GameRepo => this.DependOn<IGameRepo>();
 
   [Dependency]
-  public IGridNodeMediatorForGridNode GridNodeMediator => this.DependOn<IGridNodeMediator>();
+  public IGridNodeMediator GridNodeMediator => this.DependOn<IGridNodeMediator>();
   #endregion
 
   public void Setup() {
@@ -84,6 +84,8 @@ public partial class GridNode : Node3D, IGridNode {
   }
 
   public void OnResolved() {
+    GridNodeMediator.Register(GridPosition, this);
+
     GridNodeLogicBinding = GridNodeLogic.Bind();
 
     SpawnAnimated += OnSpawnAnimated;
@@ -115,6 +117,8 @@ public partial class GridNode : Node3D, IGridNode {
   }
 
   public void ExitTree() {
+    GridNodeMediator.Unregister(GridPosition);
+
     SpawnAnimated -= OnSpawnAnimated;
 
     GridNodeLogicBinding.Dispose();

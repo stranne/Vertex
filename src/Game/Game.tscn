@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://cywpu6lxdjhuu"]
+[gd_scene load_steps=5 format=3 uid="uid://cywpu6lxdjhuu"]
 
 [ext_resource type="Script" path="res://src/Game/Game.cs" id="1_17mmo"]
 [ext_resource type="PackedScene" uid="uid://666kno22fa7d" path="res://src/GridNode/GridNode.tscn" id="2_xmktu"]
+[ext_resource type="PackedScene" uid="uid://b35hwl1ilr6ie" path="res://src/Menu/Start/menu_start.tscn" id="3_ixv8j"]
+[ext_resource type="PackedScene" uid="uid://cshd0krk1y672" path="res://src/Menu/GameEnded/menu_game_ended.tscn" id="4_kxffu"]
 
 [node name="Game" type="Node3D"]
 script = ExtResource("1_17mmo")
@@ -22,4 +24,21 @@ enabled = false
 [node name="GridBoard" type="Node3D" parent="."]
 unique_name_in_owner = true
 
-[node name="GridNode" parent="GridBoard" instance=ExtResource("2_xmktu")]
+[node name="Menu" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MenuStart" parent="Menu" instance=ExtResource("3_ixv8j")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="MenuGameEnded" parent="Menu" instance=ExtResource("4_kxffu")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1

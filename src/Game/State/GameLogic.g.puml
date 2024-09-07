@@ -10,7 +10,8 @@ Vertex_Game_State_GameLogic_State_Menu --> Vertex_Game_State_GameLogic_State_Pla
 Vertex_Game_State_GameLogic_State_Playing --> Vertex_Game_State_GameLogic_State_GameOver : GameOver
 
 Vertex_Game_State_GameLogic_State_GameOver : OnEnter → Ending
+Vertex_Game_State_GameLogic_State_Playing : OnAddNewGridNode() → AddNewGridNode
 Vertex_Game_State_GameLogic_State_Playing : OnEnter → NewGame
 
-[*] --> Vertex_Game_State_GameLogic_State_Playing
+[*] --> Vertex_Game_State_GameLogic_State_Menu
 @enduml

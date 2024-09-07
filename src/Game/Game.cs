@@ -3,11 +3,13 @@ namespace Vertex.Game;
 using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
-using Chickensoft.LogicBlocks;
 using Godot;
 using Vertex.Game.Domain;
 using Vertex.Game.State;
 using Vertex.GridNode;
+using Vertex.Menu.GameEnded;
+using Vertex.Menu.Start;
+
 
 public interface IGame : INode3D, IProvide<IGameRepo>, IProvide<IGridNodeMediator> { }
 
@@ -22,8 +24,8 @@ public partial class Game : Node3D, IGame {
   public IGameRepo GameRepo { get; set; } = default!;
   IGameRepo IProvide<IGameRepo>.Value() => GameRepo;
 
-  public IGridNodeMediatorForGameRepo GridNodeMediator { get; set; } = default!;
-  IGridNodeMediator IProvide<IGridNodeMediator>.Value() => (IGridNodeMediator)GridNodeMediator;
+  public IGridNodeMediator GridNodeMediator { get; set; } = default!;
+  IGridNodeMediator IProvide<IGridNodeMediator>.Value() => GridNodeMediator;
 
   [Export]
   public Color[] PlayerColors = [
@@ -47,30 +49,53 @@ public partial class Game : Node3D, IGame {
 
   [Node]
   public INode3D GridBoard { get; set; } = default!;
+
+  [Node]
+  public IMenuStart MenuStart { get; set; } = default!;
+
+  [Node]
+  public IMenuGameEnded MenuGameEnded { get; set; } = default!;
   #endregion
 
   public void Setup() {
     GridNodeMediator = new GridNodeMediator(GridNodeScene);
     GameRepo = new GameRepo(PlayerColors, GridNodeMediator);
 
+    MenuStart.StartGame += OnStartGame;
+    MenuGameEnded.Restart += OnRestart;
+
     this.Provide();
+  }
+
+  public void OnExitTree() {
+    GameLogic.Stop();
+    GameLogicBinding.Dispose();
+
+    MenuStart.StartGame -= OnStartGame;
+    MenuGameEnded.Restart -= OnRestart;
   }
 
   public void OnResolved() {
     GameLogic = new GameLogic();
     GameLogic.Set(GameRepo);
+    GameLogic.Set(GridNodeMediator);
 
     GameLogicBinding = GameLogic.Bind();
 
     GameLogicBinding
-      .Handle((in GameLogic.Output.NewGame _) =>
-        GameRepo.StartNewGame()
-      )
-      .Handle((in GameLogic.Output.AddNewGridNodes output) => {
-        // output.GridPositions.ForEach(gridNode => GridBoard.AddChild((Node3D)gridNode))
+      .Handle((in GameLogic.Output.NewGame _) => {
+        MenuStart.Visible = false;
+        GameRepo.StartNewGame();
       })
+      .Handle((in GameLogic.Output.AddNewGridNode output) =>
+        GridBoard.AddChild((Node3D)output.GridNode))
       .Handle((in GameLogic.Output.Ending output) => {
         // TODO view game over screen
+        MenuGameEnded.Visible = true;
+      })
+      .Handle((in GameLogic.Output.Restart _) => {
+        MenuGameEnded.Visible = false;
+        // TODO restart
       });
 
     GameLogic.Start();
@@ -91,8 +116,13 @@ public partial class Game : Node3D, IGame {
     var gridNode = GetClosestParent<IGridNode>(collidedNode);
     var color = GameRepo.GetCurrentPlayerColor();
     var isLeftMouseButtonPressed = Input.IsActionJustPressed("mouse_left_click");
+    // TODO GameRepo instead
     GridNodeMediator.MouseEvent(gridNode, color, isLeftMouseButtonPressed);
   }
+
+  public void OnStartGame() => GameLogic.Input(new GameLogic.Input.StartGame());
+
+  public void OnRestart() => GameLogic.Input(new GameLogic.Input.Restart());
 
   private static T? GetClosestParent<T>(Node? node) where T : class {
     while (node != null) {
