@@ -8,7 +8,9 @@ using Godot;
 using Vertex.GridNode;
 
 public interface IGameRepo : IDisposable {
+  event Action NewGame;
   event Action GameEnded;
+  event GameRepo.GridNode GridNodeSelected;
 
   void StartNewGame();
   void MouseEvent(IGridNode? hoveredGridNode, bool isLeftMouseButtonPressed);
@@ -25,10 +27,15 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
   /// <c>null</c> value indicates GridNode exists but isn't selected by any player.
   /// </remarks>
   private readonly Dictionary<Vector2I, int?> _grid = [];
+  private readonly IGridBounds _gridBounds = new GridBounds();
   private IGridNode? _hoveredGridNode;
   private int _currentPlayerId;
 
-  public event Action GameEnded;
+  public event Action? NewGame;
+  public event Action? GameEnded;
+
+  public delegate void GridNode(Vector2I gridPosition);
+  public event GridNode? GridNodeSelected;
 
   public void StartNewGame() {
     if (_grid.Count != 0) {
@@ -36,7 +43,9 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
       _grid[Vector2I.Zero] = null;
     }
 
+    _hoveredGridNode = null;
     gridNodeMediator.NewGame();
+    NewGame?.Invoke();
   }
 
   public void MouseEvent(IGridNode? hoveredGridNode, bool isLeftMouseButtonPressed) {
@@ -55,7 +64,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
       }
 
       _log.Print($"Selecting: {hoveredGridNode.Name}");
-      GridNodeSelected(gridPosition);
+      ProcessGridNodeSelection(gridPosition);
     }
   }
 
@@ -67,9 +76,10 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
     _grid[gridPosition] = null;
   }
 
-  private void GridNodeSelected(Vector2I gridPosition) {
+  private void ProcessGridNodeSelection(Vector2I gridPosition) {
     _grid[gridPosition] = _currentPlayerId;
     gridNodeMediator.SelectGridNode(gridPosition);
+    GridNodeSelected?.Invoke(gridPosition);
 
     var positionsInWinningLines = GetPositionsInWinningLines(gridPosition, _currentPlayerId);
     if (positionsInWinningLines.Count > 0) {

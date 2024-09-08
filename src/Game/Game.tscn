@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://cywpu6lxdjhuu"]
+[gd_scene load_steps=6 format=3 uid="uid://cywpu6lxdjhuu"]
 
 [ext_resource type="Script" path="res://src/Game/Game.cs" id="1_17mmo"]
 [ext_resource type="PackedScene" uid="uid://666kno22fa7d" path="res://src/GridNode/GridNode.tscn" id="2_xmktu"]
 [ext_resource type="PackedScene" uid="uid://b35hwl1ilr6ie" path="res://src/Menu/Start/menu_start.tscn" id="3_ixv8j"]
+[ext_resource type="PackedScene" uid="uid://cbgxq6hieo3xg" path="res://src/CameraRig/CameraRig.tscn" id="3_wfe7a"]
 [ext_resource type="PackedScene" uid="uid://cshd0krk1y672" path="res://src/Menu/GameEnded/menu_game_ended.tscn" id="4_kxffu"]
 
 [node name="Game" type="Node3D"]
@@ -12,14 +13,8 @@ GridNodeScene = ExtResource("2_xmktu")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-1, -6.18172e-08, 6.18173e-08, 0, 0.707107, 0.707107, -8.74228e-08, 0.707106, -0.707108, 0, 0, 0)
 
-[node name="Camera" type="Camera3D" parent="."]
+[node name="CameraRig" parent="." instance=ExtResource("3_wfe7a")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 3, 0)
-
-[node name="RayCast" type="RayCast3D" parent="Camera"]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 1.31134e-07, -3)
-enabled = false
 
 [node name="GridBoard" type="Node3D" parent="."]
 unique_name_in_owner = true

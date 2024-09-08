@@ -1,17 +1,17 @@
 namespace Vertex.Game;
 
+using System;
 using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
 using Godot;
+using Vertex.CameraRig;
 using Vertex.Game.Domain;
 using Vertex.Game.State;
-using Vertex.GridNode;
 using Vertex.Menu.GameEnded;
 using Vertex.Menu.Start;
 
-
-public interface IGame : INode3D, IProvide<IGameRepo>, IProvide<IGridNodeMediator> { }
+public interface IGame : INode3D, IProvide<IGameRepo>, IProvide<IGridNodeMediator>, IProvide<IGridBounds> { }
 
 [Meta(typeof(IAutoNode))]
 public partial class Game : Node3D, IGame {
@@ -27,6 +27,9 @@ public partial class Game : Node3D, IGame {
   public IGridNodeMediator GridNodeMediator { get; set; } = default!;
   IGridNodeMediator IProvide<IGridNodeMediator>.Value() => GridNodeMediator;
 
+  public IGridBounds GridBounds { get; set; } = default!;
+  IGridBounds IProvide<IGridBounds>.Value() => GridBounds;
+
   [Export]
   public Color[] PlayerColors = [
     new(1, 0, 0),
@@ -39,13 +42,7 @@ public partial class Game : Node3D, IGame {
 
   #region Nodes
   [Node]
-  public ICamera3D Camera { get; set; } = default!;
-
-  /// <remarks>
-  /// RayCast has Enabled property set to false to avoid unnecessary ray casts in physics process.
-  /// </remarks>
-  [Node]
-  public IRayCast3D RayCast { get; set; } = default!;
+  public ICameraRig CameraRig { get; set; } = default!;
 
   [Node]
   public INode3D GridBoard { get; set; } = default!;
@@ -60,10 +57,12 @@ public partial class Game : Node3D, IGame {
   public void Setup() {
     GridNodeMediator = new GridNodeMediator(GridNodeScene);
     GameRepo = new GameRepo(PlayerColors, GridNodeMediator);
+    GridBounds = new GridBounds();
 
     MenuStart.StartGame += OnStartGame;
     MenuGameEnded.Restart += OnRestart;
     GameRepo.GameEnded += OnGameEnded;
+    GameRepo.GridNodeSelected += OnGridNodeSelected;
 
     this.Provide();
   }
@@ -75,6 +74,7 @@ public partial class Game : Node3D, IGame {
     MenuStart.StartGame -= OnStartGame;
     MenuGameEnded.Restart -= OnRestart;
     GameRepo.GameEnded -= OnGameEnded;
+    GameRepo.GridNodeSelected -= OnGridNodeSelected;
   }
 
   public void OnResolved() {
@@ -89,6 +89,7 @@ public partial class Game : Node3D, IGame {
         MenuStart.Visible = false;
         MenuGameEnded.Visible = false;
         GameRepo.StartNewGame();
+        GridBounds.Reset();
       })
       .Handle((in GameLogic.Output.AddNewGridNode output) => {
         GameRepo.AddGridNode(output.GridPosition);
@@ -102,38 +103,22 @@ public partial class Game : Node3D, IGame {
     GameLogic.Start();
   }
 
-  public override void _Process(double delta) => HandleGridNodeHoverAndClick();
+  public void OnStartGame() =>
+    GameLogic.Input(new GameLogic.Input.StartGame());
 
-  public void HandleGridNodeHoverAndClick() {
-    var mousePosition = GetViewport().GetMousePosition();
-    var from = Camera.ProjectRayOrigin(mousePosition);
-    var to = Camera.ProjectRayNormal(mousePosition) * 1000;
+  public void OnRestart() =>
+    GameLogic.Input(new GameLogic.Input.Restart());
 
-    RayCast.GlobalPosition = from;
-    RayCast.TargetPosition = to - from;
+  public void OnGameEnded() =>
+    GameLogic.Input(new GameLogic.Input.GameEnded());
 
-    RayCast.ForceRaycastUpdate();
-    var collidedNode = RayCast.GetCollider() as Node;
-    var gridNode = GetClosestParent<IGridNode>(collidedNode);
-    var isLeftMouseButtonPressed = Input.IsActionJustPressed("mouse_left_click");
-    GameRepo.MouseEvent(gridNode, isLeftMouseButtonPressed);
-  }
+  public void OnGridNodeSelected(Vector2I gridPosition) =>
+    GridBounds.UpdateBounds(gridPosition);
 
-  public void OnStartGame() => GameLogic.Input(new GameLogic.Input.StartGame());
+  private static float CalculateZoomFactor(float gridWidth, float gridHeight, float screenWidth, float screenHeight) {
+    var zoomX = screenWidth / gridWidth;
+    var zoomY = screenHeight / gridHeight;
 
-  public void OnRestart() => GameLogic.Input(new GameLogic.Input.Restart());
-
-  public void OnGameEnded() => GameLogic.Input(new GameLogic.Input.GameEnded());
-
-  private static T? GetClosestParent<T>(Node? node) where T : class {
-    while (node != null) {
-      if (node is T targetNode) {
-        return targetNode;
-      }
-
-      node = node.GetParent();
-    }
-
-    return null;
+    return Mathf.Max(zoomX, zoomY);
   }
 }

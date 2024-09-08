@@ -22,7 +22,7 @@ public partial class GameLogic {
         this.OnEnter(() => Output(new Output.NewGame()));
       }
 
-      public Transition On(in Input.GameEnded _) => To<GameEnded>();
+      public Transition On(in Input.GameEnded input) => To<GameEnded>();
 
       public void OnAddNewGridNode(Vector2I gridPosition, IGridNode gridNode) =>
         Output(new Output.AddNewGridNode(gridPosition, gridNode));
