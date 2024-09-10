@@ -19,6 +19,10 @@ config/icon="res://icon.png"
 
 project/assembly_name="Vertex"
 
+[filesystem]
+
+import/blender/enabled=false
+
 [input]
 
 mouse_left_click={

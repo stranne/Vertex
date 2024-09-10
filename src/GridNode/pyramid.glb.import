@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://idml65bwgglu"
-path="res://.godot/imported/pyramid.glb-3a57bd08bf4fc75b7006448da87af7ae.scn"
+uid="uid://x7pfdgx8x75j"
+path="res://.godot/imported/Pyramid.glb-9c79eac7d3fe1e5d3d5756046dfab313.scn"
 
 [deps]
 
-source_file="res://src/GridNode/pyramid.glb"
-dest_files=["res://.godot/imported/pyramid.glb-3a57bd08bf4fc75b7006448da87af7ae.scn"]
+source_file="res://src/GridNode/Pyramid.glb"
+dest_files=["res://.godot/imported/Pyramid.glb-9c79eac7d3fe1e5d3d5756046dfab313.scn"]
 
 [params]
 

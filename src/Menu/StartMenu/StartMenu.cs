@@ -5,12 +5,12 @@ using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
 using Godot;
 
-public interface IMenuStart : IControl {
-  event MenuStart.StartGameEventHandler StartGame;
+public interface IStartMenu : IControl {
+  event StartMenu.StartGameEventHandler StartGame;
 }
 
 [Meta(typeof(IAutoNode))]
-public partial class MenuStart : Control, IMenuStart {
+public partial class StartMenu : Control, IStartMenu {
   public override void _Notification(int what) => this.Notify(what);
 
   [Node]

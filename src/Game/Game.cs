@@ -48,10 +48,10 @@ public partial class Game : Node3D, IGame {
   public INode3D GridBoard { get; set; } = default!;
 
   [Node]
-  public IMenuStart MenuStart { get; set; } = default!;
+  public IStartMenu StartMenu { get; set; } = default!;
 
   [Node]
-  public IMenuGameEnded MenuGameEnded { get; set; } = default!;
+  public IGameEndedMenu GameEndedMenu { get; set; } = default!;
   #endregion
 
   public void Setup() {
@@ -59,8 +59,8 @@ public partial class Game : Node3D, IGame {
     GameRepo = new GameRepo(PlayerColors, GridNodeMediator);
     GridBounds = new GridBounds();
 
-    MenuStart.StartGame += OnStartGame;
-    MenuGameEnded.Restart += OnRestart;
+    StartMenu.StartGame += OnStartGame;
+    GameEndedMenu.Restart += OnRestart;
     GameRepo.GameEnded += OnGameEnded;
     GameRepo.GridNodeSelected += OnGridNodeSelected;
 
@@ -71,8 +71,8 @@ public partial class Game : Node3D, IGame {
     GameLogic.Stop();
     GameLogicBinding.Dispose();
 
-    MenuStart.StartGame -= OnStartGame;
-    MenuGameEnded.Restart -= OnRestart;
+    StartMenu.StartGame -= OnStartGame;
+    GameEndedMenu.Restart -= OnRestart;
     GameRepo.GameEnded -= OnGameEnded;
     GameRepo.GridNodeSelected -= OnGridNodeSelected;
   }
@@ -86,8 +86,8 @@ public partial class Game : Node3D, IGame {
 
     GameLogicBinding
       .Handle((in GameLogic.Output.NewGame _) => {
-        MenuStart.Visible = false;
-        MenuGameEnded.Visible = false;
+        StartMenu.Visible = false;
+        GameEndedMenu.Visible = false;
         GameRepo.StartNewGame();
         GridBounds.Reset();
       })
@@ -97,7 +97,7 @@ public partial class Game : Node3D, IGame {
       })
       .Handle((in GameLogic.Output.Ending output) => {
         // TODO view game over screen
-        MenuGameEnded.Visible = true;
+        GameEndedMenu.Visible = true;
       });
 
     GameLogic.Start();

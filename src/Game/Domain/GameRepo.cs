@@ -21,7 +21,7 @@ public interface IGameRepo : IDisposable {
 public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) : IGameRepo {
   private const int NUMBER_IN_A_ROW_TO_WIN = 5;
 
-  private readonly ILog _log = new GDLog(nameof(GameRepo));
+  private readonly GDLog _log = new(nameof(GameRepo));
 
   /// <remarks>
   /// <c>null</c> value indicates GridNode exists but isn't selected by any player.

@@ -44,9 +44,9 @@ public class GridBounds : IGridBounds {
   }
 
   public void Reset() {
-    _minX = 1;
+    _minX = -1;
     _maxX = 1;
-    _minY = 1;
+    _minY = -1;
     _maxY = 1;
 
     NotifyListeners();

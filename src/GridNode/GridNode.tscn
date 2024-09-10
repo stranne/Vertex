@@ -1,12 +1,49 @@
-[gd_scene load_steps=11 format=3 uid="uid://666kno22fa7d"]
+[gd_scene load_steps=12 format=4 uid="uid://666kno22fa7d"]
 
 [ext_resource type="Script" path="res://src/GridNode/GridNode.cs" id="1_cr6ng"]
-[ext_resource type="PackedScene" uid="uid://idml65bwgglu" path="res://src/GridNode/pyramid.glb" id="2_eql5g"]
-[ext_resource type="Material" uid="uid://7b27twjmfuui" path="res://src/GridNode/GridNode_BaseMaterial.tres" id="3_rn5a5"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_qvgkt"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f7s3g"]
+resource_name = "Material.003"
+cull_mode = 2
+albedo_color = Color(0.906332, 0.906332, 0.906332, 1)
+roughness = 0.5
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_8omsd"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_p6y47"]
+_surfaces = [{
+"aabb": AABB(-0.728677, -0.446425, -0.728677, 1.45735, 0.89285, 1.45735),
+"format": 34896613377,
+"index_count": 12,
+"index_data": PackedByteArray("AAABAAQAAQACAAQAAgADAAQAAwAAAAQA"),
+"name": "Material.003",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 5,
+"vertex_data": PackedByteArray("/38AAAAAAAD//wAA/38AAP9/AAD//wAAAAAAAP9/AAD/f////38AAA==")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_1gboa"]
+resource_name = "Pyramid_Cone_001"
+_surfaces = [{
+"aabb": AABB(-0.728677, -0.446425, -0.728677, 1.45735, 0.89285, 1.45735),
+"attribute_data": PackedByteArray("/z+Ogv8/joJwff+/cH3/v/8/b/3/P2/9jwL/v48C/7//P/+//z//v/8//7//P/+/"),
+"format": 34896613399,
+"index_count": 12,
+"index_data": PackedByteArray("AAADAAkAAgAEAAgABQAGAAoABwABAAsA"),
+"material": SubResource("StandardMaterial3D_f7s3g"),
+"name": "Material.003",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 12,
+"vertex_data": PackedByteArray("/38AAAAAq97/fwAAAACr3v//AAD/f+ay//8AAP9/q97/fwAA///msv9/AAD//+ayAAAAAP9/5rIAAAAA/3+r3v9/////f+ay/3////9/q97/f////3/msv9/////f6ve98pqXGncBrVltCBn98pqXGW0IGcg55jLIOeYy2ncBrVltCBn98pqXCDnmMtp3Aa1")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_p6y47")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0qnuc"]
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_te1k4"]
+data = PackedVector3Array(0, -0.4464, -0.7287, 0.7287, -0.4464, 0, 0, 0.4464, 0, 0.7287, -0.4464, 0, 0, -0.4464, 0.7287, 0, 0.4464, 0, 0, -0.4464, 0.7287, -0.7287, -0.4464, 0, 0, 0.4464, 0, -0.7287, -0.4464, 0, 0, -0.4464, -0.7287, 0, 0.4464, 0)
 
 [sub_resource type="Animation" id="Animation_3a1n0"]
 length = 0.001
@@ -20,27 +57,15 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector3(0.75, 0.75, 0.75)]
+"values": [Vector3(0.5, 0.5, 0.5)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Pyramid:position")
+tracks/1/path = NodePath("Pyramid/Cone:surface_material_override/0:albedo_color")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 0.375, 0)]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Pyramid:surface_material_override/0:albedo_color")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
@@ -53,14 +78,14 @@ length = 0.2
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Pyramid:surface_material_override/0:albedo_color")
+tracks/0/path = NodePath("Pyramid/Cone:surface_material_override/0:albedo_color")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 2),
+"transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Color(1, 1, 1, 1), Color(0.915292, 0, 0.265173, 1)]
+"values": [Color(1, 1, 1, 1), Color(1, 0.25098, 1, 1)]
 }
 
 [sub_resource type="Animation" id="Animation_kbslx"]
@@ -69,30 +94,32 @@ length = 0.2
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Pyramid:surface_material_override/0:albedo_color")
+tracks/0/path = NodePath("Pyramid/Cone:surface_material_override/0:albedo_color")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 2),
+"transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Color(1, 1, 1, 1), Color(0.915292, 0, 0.265173, 1)]
+"values": [Color(1, 1, 1, 1), Color(1, 0.172549, 1, 1)]
 }
 
 [sub_resource type="Animation" id="Animation_bd75a"]
 resource_name = "spawn"
 length = 0.7
-tracks/0/type = "value"
+tracks/0/type = "method"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Pyramid:position")
+tracks/0/path = NodePath(".")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.3, 0.5, 0.7),
-"transitions": PackedFloat32Array(1, 0.5, 0.5, 0.5),
-"update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, 0.425, 0), Vector3(0, 0.325, 0), Vector3(0, 0.375, 0)]
+"times": PackedFloat32Array(0.7),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [&"SpawnAnimated"],
+"method": &"emit_signal"
+}]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -104,21 +131,19 @@ tracks/1/keys = {
 "times": PackedFloat32Array(0, 0.3, 0.5, 0.7),
 "transitions": PackedFloat32Array(1, 0.5, 0.5, 0.5),
 "update": 0,
-"values": [Vector3(0.001, 0.001, 0.001), Vector3(0.85, 0.85, 0.85), Vector3(0.65, 0.65, 0.65), Vector3(0.75, 0.75, 0.75)]
+"values": [Vector3(0, 0, 0), Vector3(0.85, 0.85, 0.85), Vector3(0.65, 0.65, 0.65), Vector3(0.75, 0.75, 0.75)]
 }
-tracks/2/type = "method"
+tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath(".")
+tracks/2/path = NodePath("Pyramid/Cone:surface_material_override/0:albedo_color")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0.7),
+"times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
-"values": [{
-"args": [&"SpawnAnimated"],
-"method": &"emit_signal"
-}]
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_6nc61"]
@@ -132,23 +157,21 @@ _data = {
 [node name="GridNode" type="Node3D"]
 script = ExtResource("1_cr6ng")
 
-[node name="Pyramid2" parent="." instance=ExtResource("2_eql5g")]
+[node name="Pyramid" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
-visible = false
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 
-[node name="Pyramid" type="MeshInstance3D" parent="."]
+[node name="Cone" type="MeshInstance3D" parent="Pyramid"]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0, 0.444872, 0)
+mesh = SubResource("ArrayMesh_1gboa")
+skeleton = NodePath("")
+surface_material_override/0 = SubResource("StandardMaterial3D_0qnuc")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Pyramid/Cone"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pyramid/Cone/StaticBody3D"]
 unique_name_in_owner = true
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0.375, 0)
-mesh = SubResource("BoxMesh_qvgkt")
-surface_material_override/0 = ExtResource("3_rn5a5")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="Pyramid"]
-
-[node name="CollisionShape" type="CollisionShape3D" parent="Pyramid/StaticBody3D"]
-unique_name_in_owner = true
-shape = SubResource("BoxShape3D_8omsd")
-disabled = true
+shape = SubResource("ConcavePolygonShape3D_te1k4")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true

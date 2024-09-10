@@ -5,12 +5,12 @@ using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
 using Godot;
 
-public interface IMenuGameEnded : IControl {
-  event MenuGameEnded.RestartEventHandler Restart;
+public interface IGameEndedMenu : IControl {
+  event GameEndedMenu.RestartEventHandler Restart;
 }
 
 [Meta(typeof(IAutoNode))]
-public partial class MenuGameEnded : Control, IMenuGameEnded {
+public partial class GameEndedMenu : Control, IGameEndedMenu {
   public override void _Notification(int what) => this.Notify(what);
 
   [Node]

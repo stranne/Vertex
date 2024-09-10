@@ -21,6 +21,7 @@ public interface IGridNode : INode3D {
 
 [Meta(typeof(IAutoNode))]
 public partial class GridNode : Node3D, IGridNode {
+  private const string ANIMATION_SPAWN_NAME = "spawn";
   private const string ANIMATION_HOVER_NAME = "hover";
   private const string ANIMATION_SELECT_NAME = "select";
 
@@ -28,9 +29,10 @@ public partial class GridNode : Node3D, IGridNode {
 
   public Vector2I GridPosition { get; set; } = default!;
 
-  private Color _defaultMaterialColor = default!;
+  private Animation _animationSpawn = default!;
   private Animation _animationHover = default!;
   private Animation _animationSelect = default!;
+  private int _animationSpawnTrackIndex = default!;
   private int _animationHoverTrackIndex = default!;
   private int _animationSelectTrackIndex = default!;
 
@@ -42,17 +44,20 @@ public partial class GridNode : Node3D, IGridNode {
   #region States
   public IGridNodeLogic GridNodeLogic { get; set; } = default!;
   public GridNodeLogic.IBinding GridNodeLogicBinding { get; set; } = default!;
+
+  [Export]
+  public Color DefaultColor { get; set; } = new(1, 1, 1, 1);
   #endregion
 
   #region Nodes
-  [Node]
-  public IMeshInstance3D Pyramid { get; set; } = default!;
+  [Node("%Pyramid/Cone")]
+  public IMeshInstance3D PyramidMesh { get; set; } = default!;
 
   /// <remarks>
   /// Is disabled by default to block hovering and select until after spawning completes.
   /// </remarks>
   [Node]
-  public ICollisionShape3D CollisionShape { get; set; } = default!;
+  public ICollisionShape3D CollisionShape3D { get; set; } = default!;
 
   [Node]
   public IAnimationPlayer AnimationPlayer { get; set; } = default!;
@@ -74,18 +79,20 @@ public partial class GridNode : Node3D, IGridNode {
       GridPosition = GridPosition
     });
 
-    var material = (StandardMaterial3D)Pyramid.GetSurfaceOverrideMaterial(0).Duplicate();
-    // Duplicate material to avoid changing all instances of the material at the same time
-    var uniqueMaterial = (StandardMaterial3D)material.Duplicate();
-    Pyramid.SetSurfaceOverrideMaterial(0, uniqueMaterial);
-    _defaultMaterialColor = uniqueMaterial.AlbedoColor;
+    var defaultMaterial = CreateMaterial(DefaultColor);
+    PyramidMesh.SetSurfaceOverrideMaterial(0, defaultMaterial);
 
+    _animationSpawn = AnimationPlayer.GetAnimation(ANIMATION_SPAWN_NAME);
     _animationHover = AnimationPlayer.GetAnimation(ANIMATION_HOVER_NAME);
     _animationSelect = AnimationPlayer.GetAnimation(ANIMATION_SELECT_NAME);
-    _animationHoverTrackIndex = GetAnimationTrackIndex(_animationHover, "Pyramid:surface_material_override/0:albedo_color");
-    _animationSelectTrackIndex = GetAnimationTrackIndex(_animationSelect, "Pyramid:surface_material_override/0:albedo_color");
+    const string trackPath = "Pyramid/Cone:surface_material_override/0:albedo_color";
+    _animationSpawnTrackIndex = GetAnimationTrackIndex(_animationSpawn, trackPath);
+    _animationHoverTrackIndex = GetAnimationTrackIndex(_animationHover, trackPath);
+    _animationSelectTrackIndex = GetAnimationTrackIndex(_animationSelect, trackPath);
+
     // Ensure the first keyframe is same as material color
-    SetAnimationFirsTrackKeyColor(_animationHover, _animationHoverTrackIndex, _defaultMaterialColor);
+    SetAnimationFirsTrackKeyColor(_animationSpawn, _animationSpawnTrackIndex, DefaultColor);
+    SetAnimationFirsTrackKeyColor(_animationHover, _animationHoverTrackIndex, DefaultColor);
   }
 
   public void OnResolved() {
@@ -97,14 +104,14 @@ public partial class GridNode : Node3D, IGridNode {
 
     GridNodeLogicBinding
       .Handle((in GridNodeLogic.Output.SpawnStarted _) => {
-        CollisionShape.Disabled = true;
-        AnimationPlayer.Play("spawn");
+        CollisionShape3D.Disabled = true;
+        AnimationPlayer.Play(ANIMATION_SPAWN_NAME);
       })
       .Handle((in GridNodeLogic.Output.SpawnComplete _) =>
-        CollisionShape.Disabled = false
+        CollisionShape3D.Disabled = false
       )
       .Handle((in GridNodeLogic.Output.Disabled _) =>
-        CollisionShape.Disabled = true
+        CollisionShape3D.Disabled = true
       )
       .Handle((in GridNodeLogic.Output.HoverEntered output) => {
         SetHoverAnimationsColor(output.Color);
@@ -151,7 +158,7 @@ public partial class GridNode : Node3D, IGridNode {
   private void SetHoverAnimationsColor(Color color) {
     // Set how much of the color should be applied on hover
     color.A = 0.4f;
-    var mixedColor = _defaultMaterialColor.Blend(color);
+    var mixedColor = DefaultColor.Blend(color);
 
     var lastTrackKey = _animationHover.TrackGetKeyCount(_animationHoverTrackIndex) - 1;
     _animationHover.TrackSetKeyValue(_animationHoverTrackIndex, lastTrackKey, mixedColor);
@@ -168,7 +175,7 @@ public partial class GridNode : Node3D, IGridNode {
     AnimationPlayer.Play(ANIMATION_SELECT_NAME);
     // Get current color to pick up where any hovering animation might be
     var currentColor = GetCurrentMaterialColor();
-    SetAnimationFirsTrackKeyColor(_animationHover, _animationHoverTrackIndex, _defaultMaterialColor);
+    SetAnimationFirsTrackKeyColor(_animationHover, _animationHoverTrackIndex, DefaultColor);
     SetAnimationLastTrackKeyColor(_animationSelect, _animationSelectTrackIndex, color);
   }
 
@@ -181,5 +188,10 @@ public partial class GridNode : Node3D, IGridNode {
   }
 
   private Color GetCurrentMaterialColor() =>
-    ((StandardMaterial3D)Pyramid.GetSurfaceOverrideMaterial(0)).AlbedoColor;
+    ((StandardMaterial3D)PyramidMesh.GetSurfaceOverrideMaterial(0)).AlbedoColor;
+
+  private static StandardMaterial3D CreateMaterial(Color color) =>
+   new() {
+     AlbedoColor = color
+   };
 }

@@ -14,9 +14,9 @@ public interface ICameraRig : INode3D { }
 public partial class CameraRig : Node3D, ICameraRig {
   public override void _Notification(int what) => this.Notify(what);
 
-  private readonly ILog _log = new GDLog(nameof(CameraRig));
+  private readonly GDLog _log = new(nameof(CameraRig));
 
-  private Tween _tween = default!;
+  // private Tween _tween = default!;
 
   [Dependency]
   public IGameRepo GameRepo => this.DependOn<IGameRepo>();
@@ -31,7 +31,7 @@ public partial class CameraRig : Node3D, ICameraRig {
   public IRayCast3D RayCast { get; set; } = default!;
 
   public void OnReady() {
-    _tween = GetTree().CreateTween();
+    // _tween = GetTree().CreateTween();
   }
 
   public void OnResolved() {
