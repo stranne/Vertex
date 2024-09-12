@@ -16,8 +16,6 @@ public partial class CameraRig : Node3D, ICameraRig {
 
   private readonly GDLog _log = new(nameof(CameraRig));
 
-  // private Tween _tween = default!;
-
   [Dependency]
   public IGameRepo GameRepo => this.DependOn<IGameRepo>();
 
@@ -25,14 +23,10 @@ public partial class CameraRig : Node3D, ICameraRig {
   public IGridBounds GridBounds => this.DependOn<IGridBounds>();
 
   [Node]
-  public ICamera3D Camera { get; set; } = default!;
+  public Camera3D Camera { get; set; } = default!;
 
   [Node]
   public IRayCast3D RayCast { get; set; } = default!;
-
-  public void OnReady() {
-    // _tween = GetTree().CreateTween();
-  }
 
   public void OnResolved() {
     GridBounds.BoundsUpdated += OnBoundsUpdated;
@@ -40,9 +34,9 @@ public partial class CameraRig : Node3D, ICameraRig {
     GameRepo.GameEnded += OnDisableRayCast;
   }
 
-  public override void _Process(double delta) => HandleGridNodeHoverAndClick();
-
   public override void _PhysicsProcess(double delta) => UpdateRayCast();
+
+  public override void _Process(double delta) => HandleGridNodeHoverAndClick();
 
   public void ExitTree() {
     GridBounds.BoundsUpdated -= OnBoundsUpdated;
@@ -65,11 +59,22 @@ public partial class CameraRig : Node3D, ICameraRig {
       ? boardHeight
       : boardWidth / viewportAspectRatio;
 
-    Camera.Size = orthogonalSize;
 
     var center = bounds.Position + (bounds.Size / 2);
     var height = orthogonalSize * 2;
-    Position = new Vector3(center.X, height, center.Y);
+
+    const float duration = 0.3f;
+    var tween = GetTree()
+      .CreateTween()
+      .SetParallel();
+    tween
+      .TweenProperty(Camera, "size", orthogonalSize, duration)
+      .SetTrans(Tween.TransitionType.Sine)
+      .SetEase(Tween.EaseType.InOut);
+    tween
+      .TweenProperty(this, "position", new Vector3(center.X, height, center.Y), duration)
+      .SetTrans(Tween.TransitionType.Sine)
+      .SetEase(Tween.EaseType.InOut);
   }
 
   public void OnEnableRayCast() {

@@ -50,7 +50,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
 
   public void MouseEvent(IGridNode? hoveredGridNode, bool isLeftMouseButtonPressed) {
     if (_hoveredGridNode != hoveredGridNode) {
-      _log.Print($"Hovering: {_hoveredGridNode?.Name ?? "null"} -> {hoveredGridNode?.Name ?? "null"}");
+      // _log.Print($"Hovering: {_hoveredGridNode?.Name ?? "null"} -> {hoveredGridNode?.Name ?? "null"}");
       _hoveredGridNode?.HoverExit();
       _hoveredGridNode = hoveredGridNode;
       _hoveredGridNode?.HoverEnter(GetCurrentPlayerColor());
@@ -63,7 +63,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
         return;
       }
 
-      _log.Print($"Selecting: {hoveredGridNode.Name}");
+      // _log.Print($"Selecting: {hoveredGridNode.Name}");
       ProcessGridNodeSelection(gridPosition);
     }
   }
