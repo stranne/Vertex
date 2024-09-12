@@ -51,11 +51,25 @@ public partial class CameraRig : Node3D, ICameraRig {
   }
 
   public void OnBoundsUpdated(int minX, int maxX, int minY, int maxY) {
-    var bounds = new Rect2(minX, minY, maxX - minX, maxY - minY);
-    var newPosition = CalculateNewPosition(bounds);
-    _log.Print($"CameraRig: {newPosition}, minX: {minX}, maxX: {maxX}, minY: {minY}, maxY: {maxY}");
+    const float borderMargin = 1.2f;
 
-    Position = newPosition;
+    var bounds = new Rect2(minX, minY, maxX - minX, maxY - minY);
+
+    var boardWidth = bounds.Size.X + (borderMargin * 2);
+    var boardHeight = bounds.Size.Y + (borderMargin * 2);
+    var gameBoardAspectRatio = boardWidth / boardHeight;
+    var viewportAspectRatio = GetViewport().GetVisibleRect().Size.X /
+                              GetViewport().GetVisibleRect().Size.Y;
+
+    var orthogonalSize = viewportAspectRatio > gameBoardAspectRatio
+      ? boardHeight
+      : boardWidth / viewportAspectRatio;
+
+    Camera.Size = orthogonalSize;
+
+    var center = bounds.Position + (bounds.Size / 2);
+    var height = orthogonalSize * 2;
+    Position = new Vector3(center.X, height, center.Y);
   }
 
   public void OnEnableRayCast() {
@@ -102,32 +116,5 @@ public partial class CameraRig : Node3D, ICameraRig {
     }
 
     return null;
-  }
-
-  private Vector3 CalculateNewPosition(Rect2 bounds) {
-    const int borderMargin = 0;
-
-    var center = bounds.Position + (bounds.Size / 2);
-    var boardWidth = bounds.Size.X + borderMargin;
-    var boardHeight = bounds.Size.Y + borderMargin;
-
-    var aspectRatio = GetViewport().GetVisibleRect().Size.X / GetViewport().GetVisibleRect().Size.Y;
-
-    float length;
-    float fovRad;
-    if (boardHeight > boardWidth) {
-      length = boardHeight / 2;
-      // Default field of view is vertical in Godot
-      fovRad = Mathf.DegToRad(Camera.Fov);
-    }
-    else {
-      length = boardWidth / 2;
-      // Calculate horizontal field of view
-      fovRad = 2.0f * Mathf.Atan(Mathf.Tan(Mathf.DegToRad(Camera.Fov) / 2.0f) * aspectRatio);
-    }
-
-    var yDistance = length / Mathf.Tan(fovRad / 2.0f);
-
-    return new Vector3(center.X, yDistance, center.Y);
   }
 }
