@@ -1,6 +1,5 @@
 namespace Vertex.GridBoard;
 
-using System.Buffers;
 using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
@@ -16,21 +15,25 @@ public partial class GridBoard : Node3D, IGridBoard {
   [Dependency]
   public IGridBounds GridBounds => this.DependOn<IGridBounds>();
 
-  public void OnResolved() =>
-    GridBounds.BoundsUpdated += OnBoundsUpdated;
+  public void OnResolved() {
+    GridBounds.BoundsUpdated += UpdateScaleAndPosition;
+    GetViewport().SizeChanged += UpdateScaleAndPosition;
+  }
 
-  public void ExitTree() =>
-    GridBounds.BoundsUpdated -= OnBoundsUpdated;
+  public void ExitTree() {
+    GridBounds.BoundsUpdated -= UpdateScaleAndPosition;
+    GetViewport().SizeChanged -= UpdateScaleAndPosition;
+  }
 
-  public void OnBoundsUpdated(int minX, int maxX, int minY, int maxY) {
-    const float marginFactor = 0.1f;
+  public void UpdateScaleAndPosition() {
+    const float marginFactor = 0.5f;
 
-    var width = (maxX - minX) * (1 + marginFactor);
-    var height = (maxY - minY) * (1 + marginFactor);
+    var width = (GridBounds.MaxX - GridBounds.MinX) * (1 + marginFactor);
+    var height = (GridBounds.MaxY - GridBounds.MinY) * (1 + marginFactor);
 
     var boardAspectRatio = width / height;
     var viewportAspectRatio = GetViewport().GetVisibleRect().Size.X /
-                                GetViewport().GetVisibleRect().Size.Y;
+                              GetViewport().GetVisibleRect().Size.Y;
 
     float visibleWidth, visibleHeight;
     if (viewportAspectRatio > boardAspectRatio) {
@@ -42,10 +45,10 @@ public partial class GridBoard : Node3D, IGridBoard {
       visibleHeight = visibleWidth / viewportAspectRatio;
     }
 
-    var centerX = (minX + maxX) / 2.0f;
-    var centerZ = (minY + maxY) / 2.0f;
-    Position = new Vector3(centerX, 0, centerZ);
+    var centerX = (GridBounds.MinX + GridBounds.MaxX) / 2.0f;
+    var centerZ = (GridBounds.MinY + GridBounds.MaxY) / 2.0f;
 
     Scale = new Vector3(visibleWidth, 1, visibleHeight);
+    Position = new Vector3(centerX, 0, centerZ);
   }
 }

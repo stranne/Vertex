@@ -29,9 +29,10 @@ public partial class CameraRig : Node3D, ICameraRig {
   public IRayCast3D RayCast { get; set; } = default!;
 
   public void OnResolved() {
-    GridBounds.BoundsUpdated += OnBoundsUpdated;
     GameRepo.NewGame += OnEnableRayCast;
     GameRepo.GameEnded += OnDisableRayCast;
+    GridBounds.BoundsUpdated += UpdateSizeAndPosition;
+    GetViewport().SizeChanged += UpdateSizeAndPosition;
   }
 
   public override void _PhysicsProcess(double delta) => UpdateRayCast();
@@ -39,15 +40,16 @@ public partial class CameraRig : Node3D, ICameraRig {
   public override void _Process(double delta) => HandleGridNodeHoverAndClick();
 
   public void ExitTree() {
-    GridBounds.BoundsUpdated -= OnBoundsUpdated;
     GameRepo.NewGame -= OnEnableRayCast;
     GameRepo.GameEnded -= OnDisableRayCast;
+    GridBounds.BoundsUpdated -= UpdateSizeAndPosition;
+    GetViewport().SizeChanged -= UpdateSizeAndPosition;
   }
 
-  public void OnBoundsUpdated(int minX, int maxX, int minY, int maxY) {
+  public void UpdateSizeAndPosition() {
     const float borderMargin = 1.2f;
 
-    var bounds = new Rect2(minX, minY, maxX - minX, maxY - minY);
+    var bounds = new Rect2(GridBounds.MinX, GridBounds.MinY, GridBounds.MaxX - GridBounds.MinX, GridBounds.MaxY - GridBounds.MinY);
 
     var boardWidth = bounds.Size.X + (borderMargin * 2);
     var boardHeight = bounds.Size.Y + (borderMargin * 2);
