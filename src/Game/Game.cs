@@ -45,7 +45,7 @@ public partial class Game : Node3D, IGame {
   public ICameraRig CameraRig { get; set; } = default!;
 
   [Node]
-  public INode3D GridBoard { get; set; } = default!;
+  public INode3D GridNodeContainer { get; set; } = default!;
 
   [Node]
   public IStartMenu StartMenu { get; set; } = default!;
@@ -93,7 +93,7 @@ public partial class Game : Node3D, IGame {
       })
       .Handle((in GameLogic.Output.AddNewGridNode output) => {
         GameRepo.AddGridNode(output.GridPosition);
-        GridBoard.AddChild((Node3D)output.GridNode);
+        GridNodeContainer.AddChild((Node3D)output.GridNode);
       })
       .Handle((in GameLogic.Output.Ending output) => {
         // TODO view game over screen

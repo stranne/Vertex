@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://cywpu6lxdjhuu"]
+[gd_scene load_steps=7 format=3 uid="uid://cywpu6lxdjhuu"]
 
 [ext_resource type="Script" path="res://src/Game/Game.cs" id="1_17mmo"]
 [ext_resource type="PackedScene" uid="uid://666kno22fa7d" path="res://src/GridNode/GridNode.tscn" id="2_xmktu"]
 [ext_resource type="PackedScene" uid="uid://b35hwl1ilr6ie" path="res://src/Menu/StartMenu/start_menu.tscn" id="3_ixv8j"]
 [ext_resource type="PackedScene" uid="uid://cbgxq6hieo3xg" path="res://src/CameraRig/CameraRig.tscn" id="3_wfe7a"]
+[ext_resource type="PackedScene" uid="uid://c1mq3r12oi1kf" path="res://src/GridBoard/GridBoard.tscn" id="4_33a2g"]
 [ext_resource type="PackedScene" uid="uid://cshd0krk1y672" path="res://src/Menu/GameEndedMenu/game_ended_menu.tscn" id="4_kxffu"]
 
 [node name="Game" type="Node3D"]
@@ -16,7 +17,9 @@ transform = Transform3D(-1, -6.18172e-08, 6.18173e-08, 0, 0.707107, 0.707107, -8
 [node name="CameraRig" parent="." instance=ExtResource("3_wfe7a")]
 unique_name_in_owner = true
 
-[node name="GridBoard" type="Node3D" parent="."]
+[node name="GridBoard" parent="." instance=ExtResource("4_33a2g")]
+
+[node name="GridNodeContainer" type="Node3D" parent="."]
 unique_name_in_owner = true
 
 [node name="StartMenu" parent="." instance=ExtResource("3_ixv8j")]

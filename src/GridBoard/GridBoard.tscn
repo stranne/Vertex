@@ -1,6 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://c1mq3r12oi1kf"]
+[gd_scene load_steps=4 format=3 uid="uid://c1mq3r12oi1kf"]
 
 [ext_resource type="Script" path="res://src/GridBoard/GridBoard.cs" id="1_e2lsg"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wxj1e"]
+albedo_color = Color(0.105614, 0.105614, 0.105614, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_jsgeq"]
+material = SubResource("StandardMaterial3D_wxj1e")
+
 [node name="GridBoard" type="Node3D"]
 script = ExtResource("1_e2lsg")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_jsgeq")
