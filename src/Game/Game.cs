@@ -1,6 +1,5 @@
 namespace Vertex.Game;
 
-using System;
 using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
@@ -95,10 +94,9 @@ public partial class Game : Node3D, IGame {
         GameRepo.AddGridNode(output.GridPosition);
         GridNodeContainer.AddChild((Node3D)output.GridNode);
       })
-      .Handle((in GameLogic.Output.Ending output) => {
-        // TODO view game over screen
-        GameEndedMenu.Visible = true;
-      });
+      .Handle((in GameLogic.Output.Ending output) =>
+        GameEndedMenu.Visible = true
+      );
 
     GameLogic.Start();
   }

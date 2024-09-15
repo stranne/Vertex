@@ -18,7 +18,7 @@ public partial class GridNodeLogic {
 
       public Transition On(in Input.InWinningLine input) => To<WinningNode>();
 
-      public Transition On(in Input.Reset input) => To<Spawning>();
+      public Transition On(in Input.Reset input) => To<Idle>();
     }
   }
 }

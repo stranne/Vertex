@@ -1,8 +1,6 @@
 namespace Vertex.GridNode.State;
 
 using Chickensoft.Introspection;
-using Godot;
-using Vertex.Game.Domain;
 
 public partial class GridNodeLogic {
   public abstract partial record State {

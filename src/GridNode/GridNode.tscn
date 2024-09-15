@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=4 uid="uid://666kno22fa7d"]
+[gd_scene load_steps=11 format=4 uid="uid://666kno22fa7d"]
 
 [ext_resource type="Script" path="res://src/GridNode/GridNode.cs" id="1_cr6ng"]
 
@@ -104,54 +104,11 @@ tracks/0/keys = {
 "values": [Color(1, 1, 1, 1), Color(1, 0.172549, 1, 1)]
 }
 
-[sub_resource type="Animation" id="Animation_bd75a"]
-resource_name = "spawn"
-length = 0.7
-tracks/0/type = "method"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0.7),
-"transitions": PackedFloat32Array(1),
-"values": [{
-"args": [&"SpawnAnimated"],
-"method": &"emit_signal"
-}]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Pyramid:scale")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.3, 0.5, 0.7),
-"transitions": PackedFloat32Array(1, 0.5, 0.5, 0.5),
-"update": 0,
-"values": [Vector3(0.001, 0.001, 0.001), Vector3(0.85, 0.85, 0.85), Vector3(0.65, 0.65, 0.65), Vector3(0.75, 0.75, 0.75)]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Pyramid/Cone:surface_material_override/0:albedo_color")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Color(1, 1, 1, 1)]
-}
-
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_6nc61"]
 _data = {
 "RESET": SubResource("Animation_3a1n0"),
 "hover": SubResource("Animation_f3fpc"),
-"select": SubResource("Animation_kbslx"),
-"spawn": SubResource("Animation_bd75a")
+"select": SubResource("Animation_kbslx")
 }
 
 [node name="GridNode" type="Node3D"]

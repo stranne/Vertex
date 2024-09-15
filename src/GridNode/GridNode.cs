@@ -1,6 +1,7 @@
 namespace Vertex.GridNode;
 
 using System;
+using System.Collections.Generic;
 using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
@@ -21,9 +22,10 @@ public interface IGridNode : INode3D {
 
 [Meta(typeof(IAutoNode))]
 public partial class GridNode : Node3D, IGridNode {
-  private const string ANIMATION_SPAWN_NAME = "spawn";
   private const string ANIMATION_HOVER_NAME = "hover";
   private const string ANIMATION_SELECT_NAME = "select";
+
+  private Tween? _spawnTween;
 
   public override void _Notification(int what) => this.Notify(what);
 
@@ -32,14 +34,8 @@ public partial class GridNode : Node3D, IGridNode {
   private Animation _animationSpawn = default!;
   private Animation _animationHover = default!;
   private Animation _animationSelect = default!;
-  private int _animationSpawnTrackIndex = default!;
   private int _animationHoverTrackIndex = default!;
   private int _animationSelectTrackIndex = default!;
-
-  #region Signals
-  [Signal]
-  public delegate void SpawnAnimatedEventHandler();
-  #endregion
 
   #region States
   public IGridNodeLogic GridNodeLogic { get; set; } = default!;
@@ -50,12 +46,12 @@ public partial class GridNode : Node3D, IGridNode {
   #endregion
 
   #region Nodes
+  [Node]
+  public Node3D Pyramid { get; set; } = default!;
+
   [Node("%Pyramid/Cone")]
   public IMeshInstance3D PyramidMesh { get; set; } = default!;
 
-  /// <remarks>
-  /// Is disabled by default to block hovering and select until after spawning completes.
-  /// </remarks>
   [Node]
   public ICollisionShape3D CollisionShape3D { get; set; } = default!;
 
@@ -82,16 +78,13 @@ public partial class GridNode : Node3D, IGridNode {
     var defaultMaterial = CreateMaterial(DefaultColor);
     PyramidMesh.SetSurfaceOverrideMaterial(0, defaultMaterial);
 
-    _animationSpawn = AnimationPlayer.GetAnimation(ANIMATION_SPAWN_NAME);
     _animationHover = AnimationPlayer.GetAnimation(ANIMATION_HOVER_NAME);
     _animationSelect = AnimationPlayer.GetAnimation(ANIMATION_SELECT_NAME);
     const string trackPath = "Pyramid/Cone:surface_material_override/0:albedo_color";
-    _animationSpawnTrackIndex = GetAnimationTrackIndex(_animationSpawn, trackPath);
     _animationHoverTrackIndex = GetAnimationTrackIndex(_animationHover, trackPath);
     _animationSelectTrackIndex = GetAnimationTrackIndex(_animationSelect, trackPath);
 
     // Ensure the first keyframe is same as material color
-    SetAnimationFirsTrackKeyColor(_animationSpawn, _animationSpawnTrackIndex, DefaultColor);
     SetAnimationFirsTrackKeyColor(_animationHover, _animationHoverTrackIndex, DefaultColor);
   }
 
@@ -100,16 +93,11 @@ public partial class GridNode : Node3D, IGridNode {
 
     GridNodeLogicBinding = GridNodeLogic.Bind();
 
-    SpawnAnimated += OnSpawnAnimated;
-
     GridNodeLogicBinding
-      .Handle((in GridNodeLogic.Output.SpawnStarted _) => {
-        CollisionShape3D.Disabled = true;
-        AnimationPlayer.Play(ANIMATION_SPAWN_NAME);
+      .Handle((in GridNodeLogic.Output.Spawn _) => {
+        CollisionShape3D.Disabled = false;
+        AnimateSpawn();
       })
-      .Handle((in GridNodeLogic.Output.SpawnComplete _) =>
-        CollisionShape3D.Disabled = false
-      )
       .Handle((in GridNodeLogic.Output.Disabled _) =>
         CollisionShape3D.Disabled = true
       )
@@ -129,13 +117,13 @@ public partial class GridNode : Node3D, IGridNode {
   public void ExitTree() {
     GridNodeMediator.Unregister(GridPosition);
 
-    SpawnAnimated -= OnSpawnAnimated;
+    if (_spawnTween != null) {
+      // Use if instead of null conditional to avoid CS0079 warning
+      _spawnTween.Finished -= OnSpawnComplete;
+    }
 
     GridNodeLogicBinding.Dispose();
   }
-
-  public void OnSpawnAnimated() =>
-    GridNodeLogic.Input(new GridNodeLogic.Input.Spawned());
 
   public void Reset() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.Reset());
@@ -194,4 +182,28 @@ public partial class GridNode : Node3D, IGridNode {
    new() {
      AlbedoColor = color
    };
+
+  private void AnimateSpawn() {
+    var data = new List<TweenPropertyData<float>>() {
+      new(0.0f, 0.0f),
+      new(0.85f, 0.3f),
+      new(0.65f, 0.2f),
+      new(0.75f, 0.2f),
+    };
+
+    _spawnTween = GetTree().CreateTween();
+    foreach (var tweenPropertyData in data) {
+      var scaleVector = new Vector3(tweenPropertyData.Data, tweenPropertyData.Data, tweenPropertyData.Data);
+      _spawnTween.TweenProperty(Pyramid, "scale", scaleVector, tweenPropertyData.Duration)
+        .SetTrans(Tween.TransitionType.Cubic)
+        .SetEase(Tween.EaseType.Out);
+    }
+
+    _spawnTween.Finished += OnSpawnComplete;
+  }
+
+  private void OnSpawnComplete() =>
+    GridNodeLogic.Input(new GridNodeLogic.Input.Spawned());
+
+  private sealed record TweenPropertyData<T>(T Data, float Duration);
 }

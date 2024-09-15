@@ -2,7 +2,6 @@ namespace Vertex.GridNode.State;
 
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
-using Godot;
 
 public partial class GridNodeLogic {
   public abstract partial record State {
