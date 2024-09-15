@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://cbgxq6hieo3xg"]
+[gd_scene load_steps=3 format=3 uid="uid://cbgxq6hieo3xg"]
 
 [ext_resource type="Script" path="res://src/CameraRig/CameraRig.cs" id="1_2n4li"]
+
+[sub_resource type="Environment" id="Environment_02ici"]
+background_mode = 1
+background_color = Color(0.153077, 0.153077, 0.153077, 1)
 
 [node name="CameraRig" type="Node3D"]
 script = ExtResource("1_2n4li")
@@ -8,6 +12,7 @@ script = ExtResource("1_2n4li")
 [node name="Camera" type="Camera3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 3, 0)
+environment = SubResource("Environment_02ici")
 projection = 1
 
 [node name="RayCast" type="RayCast3D" parent="."]

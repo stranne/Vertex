@@ -2,11 +2,11 @@
 
 [ext_resource type="Script" path="res://src/GridBoard/GridBoard.cs" id="1_e2lsg"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wxj1e"]
-albedo_color = Color(0.105614, 0.105614, 0.105614, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nijjp"]
+albedo_color = Color(0.153077, 0.153077, 0.153077, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_jsgeq"]
-material = SubResource("StandardMaterial3D_wxj1e")
+material = SubResource("StandardMaterial3D_nijjp")
 
 [node name="GridBoard" type="Node3D"]
 script = ExtResource("1_e2lsg")
