@@ -97,6 +97,7 @@ public partial class GridNode : Node3D, IGridNode {
       .Handle((in GridNodeLogic.Output.Spawn _) => {
         CollisionShape3D.Disabled = false;
         AnimateSpawn();
+        ((StandardMaterial3D)PyramidMesh.GetActiveMaterial(0)).AlbedoColor = DefaultColor;
       })
       .Handle((in GridNodeLogic.Output.Disabled _) =>
         CollisionShape3D.Disabled = true
