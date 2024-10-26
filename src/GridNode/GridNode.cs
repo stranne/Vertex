@@ -41,6 +41,13 @@ public partial class GridNode : Node3D, IGridNode {
 
   [Export]
   public Color DefaultColor { get; set; } = new(1, 1, 1, 1);
+
+  [Export]
+  public float DelayBetweenGridNodesInSeconds { get; set; } = 0.30f;
+
+  [Export]
+  public float DelayBetweenAnimationRestartInSeconds { get; set; } = 0.80f;
+
   #endregion
 
   #region Nodes
@@ -181,18 +188,16 @@ public partial class GridNode : Node3D, IGridNode {
     GridNodeLogic.Input(new GridNodeLogic.Input.Spawned());
 
   private void PrepareWinningLineAnimation(int lineIndex, int lineLength) {
-    const float delayBetweenGridNodesInSeconds = 0.30f;
-    const float delayBetweenAnimationRestartInSeconds = 0.80f;
 
     var animationLengthInSeconds = WinningAnimationPlayer.GetAnimation(ANIMATION_WINNING_LINE_NAME).Length;
-    WinningLineDelayTimer.WaitTime = (animationLengthInSeconds * 2) + (delayBetweenGridNodesInSeconds * lineLength) + delayBetweenAnimationRestartInSeconds;
+    WinningLineDelayTimer.WaitTime = (animationLengthInSeconds * 2) + (DelayBetweenGridNodesInSeconds * lineLength) + DelayBetweenAnimationRestartInSeconds;
 
     if (lineIndex == 0) {
       StartWinningLineAnimation();
       return;
     }
 
-    WinningInitialDelayTimer.WaitTime = delayBetweenGridNodesInSeconds * lineIndex;
+    WinningInitialDelayTimer.WaitTime = DelayBetweenGridNodesInSeconds * lineIndex;
     WinningInitialDelayTimer.Start();
   }
 
