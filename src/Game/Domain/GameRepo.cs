@@ -96,8 +96,8 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
   private void ChangeToNextPlayer() =>
     _currentPlayerId = (_currentPlayerId + 1) % playerColors.Length;
 
-  private List<Vector2I> GetPositionsInWinningLines(Vector2I gridPosition, int playerId) {
-    var gridPositionsInLines = new List<Vector2I>();
+  private Dictionary<int, List<Vector2I>> GetPositionsInWinningLines(Vector2I gridPosition, int playerId) {
+    var gridPositionsInLines = new Dictionary<int, List<Vector2I>>();
 
     Vector2I[] directions = [
       new(1, 0), // Horizontal
@@ -107,26 +107,49 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
     ];
 
     foreach (var direction in directions) {
-      var gridPositionsInLine = new List<Vector2I> { gridPosition };
+      var gridPositionsInLine = new Dictionary<int, List<Vector2I>> { { 0, new List<Vector2I>() { gridPosition } } };
 
-      gridPositionsInLine.AddRange(CountInDirection(gridPosition, direction, playerId));
-      gridPositionsInLine.AddRange(CountInDirection(gridPosition, -direction, playerId));
+      MergeDictionaries(gridPositionsInLine, GetPositionInDirection(gridPosition, direction, playerId));
+      MergeDictionaries(gridPositionsInLine, GetPositionInDirection(gridPosition, -direction, playerId));
 
       if (gridPositionsInLine.Count >= NUMBER_IN_A_ROW_TO_WIN) {
-        gridPositionsInLines.AddRange(gridPositionsInLine);
+        MergeDictionaries(gridPositionsInLines, gridPositionsInLine);
       }
     }
 
     return gridPositionsInLines;
   }
 
-  private IEnumerable<Vector2I> CountInDirection(Vector2I startPosition, Vector2I direction, int playerId) {
+  private Dictionary<int, List<Vector2I>> GetPositionInDirection(Vector2I startPosition, Vector2I direction, int playerId) {
+    var gridPositionsInLine = new Dictionary<int, List<Vector2I>>();
     var currentPosition = startPosition + direction;
+    var index = 1;
 
     while (_grid.TryGetValue(currentPosition, out var gridNodePlayer) && gridNodePlayer == playerId) {
-      yield return currentPosition;
+      gridPositionsInLine.Add(index++, [currentPosition]);
       currentPosition += direction;
     }
+
+    return gridPositionsInLine;
+  }
+
+  private static Dictionary<int, List<Vector2I>> MergeDictionaries(Dictionary<int, List<Vector2I>> dict1, Dictionary<int, List<Vector2I>> dict2) {
+    var mergedDict = dict1;
+
+    foreach (var kvp in dict1) {
+      mergedDict[kvp.Key] = kvp.Value;
+    }
+
+    foreach (var kvp in dict2) {
+      if (mergedDict.TryGetValue(kvp.Key, out var value)) {
+        value.AddRange(kvp.Value);
+      }
+      else {
+        mergedDict[kvp.Key] = kvp.Value;
+      }
+    }
+
+    return mergedDict;
   }
 
   private void PopulateEmptyNeighborGridPositions(Vector2I gridPosition) {

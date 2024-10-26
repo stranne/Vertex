@@ -10,5 +10,6 @@ public partial class GridNodeLogic {
     public readonly record struct Disabled;
 
     public readonly record struct Selected(Color Color);
+    public readonly record struct Winning(int LineIndex, int LineLength);
   }
 }

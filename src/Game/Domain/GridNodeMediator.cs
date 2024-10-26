@@ -13,7 +13,7 @@ public interface IGridNodeMediator : IDisposable {
   Vector2I GetGridNodePosition(IGridNode gridNode);
   void SelectGridNode(Vector2I gridPosition);
   void PopulateGridPositions(List<Vector2I> gridPositions);
-  void GameEnded(List<Vector2I> inWinningLineGridPositions);
+  void GameEnded(Dictionary<int, List<Vector2I>> inWinningLineGridPositions);
 
   void Register(Vector2I gridPosition, IGridNode gridNode);
   void Unregister(Vector2I gridPosition);
@@ -56,12 +56,14 @@ public class GridNodeMediator(PackedScene gridNodeScene) : IGridNodeMediator {
     }
   }
 
-  public void GameEnded(List<Vector2I> inWinningLineGridPositions) {
+  public void GameEnded(Dictionary<int, List<Vector2I>> inWinningLineGridPositions) {
     foreach (var gridPosition in inWinningLineGridPositions) {
-      _grid[gridPosition].InWinningLine();
+      foreach (var inWinningLineGridPosition in gridPosition.Value) {
+        _grid[inWinningLineGridPosition].InWinningLine(gridPosition.Key, inWinningLineGridPositions.Count);
+      }
     }
 
-    var gameOverGridPositions = _grid.Keys.Except(inWinningLineGridPositions).ToList();
+    var gameOverGridPositions = _grid.Keys.Except(inWinningLineGridPositions.Values.SelectMany(x => x)).ToList();
     foreach (var grid in gameOverGridPositions) {
       _grid[grid].GameOver();
     }

@@ -26,6 +26,7 @@ Vertex_GridNode_State_GridNodeLogic_State_Marked : OnEnter → Selected
 Vertex_GridNode_State_GridNodeLogic_State_MarkedDisabled : OnEnter → Disabled
 Vertex_GridNode_State_GridNodeLogic_State_Unmarked : OnEnter → Spawn
 Vertex_GridNode_State_GridNodeLogic_State_UnmarkedDisabled : OnEnter → Disabled
+Vertex_GridNode_State_GridNodeLogic_State_WinningNode : OnEnter → Winning
 
 [*] --> Vertex_GridNode_State_GridNodeLogic_State_Idle
 @enduml

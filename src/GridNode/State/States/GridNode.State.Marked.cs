@@ -16,7 +16,17 @@ public partial class GridNodeLogic {
 
       public Transition On(in Input.GameOver input) => To<MarkedDisabled>();
 
-      public Transition On(in Input.InWinningLine input) => To<WinningNode>();
+      public Transition On(in Input.InWinningLine input) {
+        var lineIndex = input.LineIndex;
+        var lineLength = input.LineLength;
+
+        return To<WinningNode>().With(
+          (state) => {
+            var winningNode = (WinningNode)state;
+            winningNode.LineIndex = lineIndex;
+            winningNode.LineLength = lineLength;
+          });
+      }
 
       public Transition On(in Input.Reset input) => To<Idle>();
     }

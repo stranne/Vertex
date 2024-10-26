@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=4 uid="uid://666kno22fa7d"]
+[gd_scene load_steps=17 format=4 uid="uid://666kno22fa7d"]
 
 [ext_resource type="Script" path="res://src/GridNode/GridNode.cs" id="1_cr6ng"]
 
@@ -111,6 +111,108 @@ _data = {
 "select": SubResource("Animation_kbslx")
 }
 
+[sub_resource type="Animation" id="Animation_p3b7r"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Pyramid:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.5, 0.5, 0.5)]
+}
+
+[sub_resource type="Animation" id="Animation_fja6i"]
+resource_name = "spawn"
+length = 0.8
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Pyramid:scale")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(2, 2, 2, 2),
+"update": 0,
+"values": [Vector3(0.001, 0.001, 0.001), Vector3(0.85, 0.85, 0.85), Vector3(0.65, 0.65, 0.65), Vector3(0.75, 0.75, 0.75)]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.8),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"OnSpawnComplete"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_18wdx"]
+_data = {
+"RESET": SubResource("Animation_p3b7r"),
+"spawn": SubResource("Animation_fja6i")
+}
+
+[sub_resource type="Animation" id="Animation_mfrcd"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Pyramid/Cone:surface_material_override/0:albedo_color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_b01gs"]
+resource_name = "winning_line"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Pyramid/Cone:surface_material_override/0:albedo_color")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1.5),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(0, 0, 0, 1)]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.5),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"OnWinningLineAnimationReachedEnd"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_lrlq8"]
+_data = {
+"RESET": SubResource("Animation_mfrcd"),
+"winning_line": SubResource("Animation_b01gs")
+}
+
 [node name="GridNode" type="Node3D"]
 script = ExtResource("1_cr6ng")
 
@@ -130,8 +232,35 @@ surface_material_override/0 = SubResource("StandardMaterial3D_0qnuc")
 unique_name_in_owner = true
 shape = SubResource("ConcavePolygonShape3D_te1k4")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="AnimationPlayers" type="Node3D" parent="."]
+
+[node name="SelectionAnimationPlayer" type="AnimationPlayer" parent="AnimationPlayers"]
 unique_name_in_owner = true
+root_node = NodePath("../..")
 libraries = {
 "": SubResource("AnimationLibrary_6nc61")
 }
+
+[node name="SpawnAnimationPlayer" type="AnimationPlayer" parent="AnimationPlayers"]
+unique_name_in_owner = true
+root_node = NodePath("../..")
+libraries = {
+"": SubResource("AnimationLibrary_18wdx")
+}
+
+[node name="WinningAnimationPlayer" type="AnimationPlayer" parent="AnimationPlayers"]
+unique_name_in_owner = true
+root_node = NodePath("../..")
+libraries = {
+"": SubResource("AnimationLibrary_lrlq8")
+}
+
+[node name="WinningInitialDelayTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+process_callback = 0
+one_shot = true
+
+[node name="WinningLineDelayTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+process_callback = 0
+one_shot = true

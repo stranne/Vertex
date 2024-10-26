@@ -1,7 +1,5 @@
 namespace Vertex.GridNode;
 
-using System;
-using System.Collections.Generic;
 using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
@@ -16,26 +14,27 @@ public interface IGridNode : INode3D {
   void HoverEnter(Color color);
   void HoverExit();
   void Select();
-  void InWinningLine();
+  void InWinningLine(int lineIndex, int lineLength);
   void GameOver();
 }
 
 [Meta(typeof(IAutoNode))]
 public partial class GridNode : Node3D, IGridNode {
+  private const string ANIMATION_SPAWN_NAME = "spawn";
   private const string ANIMATION_HOVER_NAME = "hover";
   private const string ANIMATION_SELECT_NAME = "select";
-
-  private Tween? _spawnTween;
+  private const string ANIMATION_WINNING_LINE_NAME = "winning_line";
 
   public override void _Notification(int what) => this.Notify(what);
 
   public Vector2I GridPosition { get; set; } = default!;
 
-  private Animation _animationSpawn = default!;
   private Animation _animationHover = default!;
   private Animation _animationSelect = default!;
-  private int _animationHoverTrackIndex = default!;
-  private int _animationSelectTrackIndex = default!;
+  private Animation _animationWinningLine = default!;
+  private int _animationHoverAlbedoColorTrackIndex = default!;
+  private int _animationSelectAlbedoColorTrackIndex = default!;
+  private int _animationWinningLineAlbedoColorTrackIndex = default!;
 
   #region States
   public IGridNodeLogic GridNodeLogic { get; set; } = default!;
@@ -56,7 +55,20 @@ public partial class GridNode : Node3D, IGridNode {
   public ICollisionShape3D CollisionShape3D { get; set; } = default!;
 
   [Node]
-  public IAnimationPlayer AnimationPlayer { get; set; } = default!;
+  public IAnimationPlayer SelectionAnimationPlayer { get; set; } = default!;
+
+  [Node]
+  /// <remarks>Separate from <see cref="AnimationPlayer"/> to allow them to run in parallel.</remarks>
+  public IAnimationPlayer SpawnAnimationPlayer { get; set; } = default!;
+
+  [Node]
+  public IAnimationPlayer WinningAnimationPlayer { get; set; } = default!;
+
+  [Node]
+  public ITimer WinningInitialDelayTimer { get; set; } = default!;
+
+  [Node]
+  public ITimer WinningLineDelayTimer { get; set; } = default!;
   #endregion
 
   #region Dependencies
@@ -78,51 +90,54 @@ public partial class GridNode : Node3D, IGridNode {
     var defaultMaterial = CreateMaterial(DefaultColor);
     PyramidMesh.SetSurfaceOverrideMaterial(0, defaultMaterial);
 
-    _animationHover = AnimationPlayer.GetAnimation(ANIMATION_HOVER_NAME);
-    _animationSelect = AnimationPlayer.GetAnimation(ANIMATION_SELECT_NAME);
+    _animationHover = SelectionAnimationPlayer.GetAnimation(ANIMATION_HOVER_NAME);
+    _animationSelect = SelectionAnimationPlayer.GetAnimation(ANIMATION_SELECT_NAME);
+    _animationWinningLine = WinningAnimationPlayer.GetAnimation(ANIMATION_WINNING_LINE_NAME);
+
     const string trackPath = "Pyramid/Cone:surface_material_override/0:albedo_color";
-    _animationHoverTrackIndex = GetAnimationTrackIndex(_animationHover, trackPath);
-    _animationSelectTrackIndex = GetAnimationTrackIndex(_animationSelect, trackPath);
+    _animationHoverAlbedoColorTrackIndex = _animationHover.GetAnimationTrackIndex(trackPath);
+    _animationSelectAlbedoColorTrackIndex = _animationSelect.GetAnimationTrackIndex(trackPath);
+    _animationWinningLineAlbedoColorTrackIndex = _animationWinningLine.GetAnimationTrackIndex(trackPath);
 
     // Ensure the first keyframe is same as material color
-    SetAnimationFirsTrackKeyColor(_animationHover, _animationHoverTrackIndex, DefaultColor);
+    _animationHover.TrackSetFirstKeyValue(_animationHoverAlbedoColorTrackIndex, DefaultColor);
   }
 
   public void OnResolved() {
     GridNodeMediator.Register(GridPosition, this);
+    WinningInitialDelayTimer.Timeout += StartWinningLineAnimation;
+    WinningLineDelayTimer.Timeout += StartWinningLineAnimation;
 
     GridNodeLogicBinding = GridNodeLogic.Bind();
 
     GridNodeLogicBinding
       .Handle((in GridNodeLogic.Output.Spawn _) => {
         CollisionShape3D.Disabled = false;
-        AnimateSpawn();
+        WinningInitialDelayTimer.Stop();
+        WinningLineDelayTimer.Stop();
+        WinningAnimationPlayer.Stop();
+        SpawnAnimationPlayer.Play(ANIMATION_SPAWN_NAME);
         ((StandardMaterial3D)PyramidMesh.GetActiveMaterial(0)).AlbedoColor = DefaultColor;
       })
       .Handle((in GridNodeLogic.Output.Disabled _) =>
-        CollisionShape3D.Disabled = true
-      )
+        CollisionShape3D.Disabled = true)
       .Handle((in GridNodeLogic.Output.HoverEntered output) => {
         SetHoverAnimationsColor(output.Color);
-        AnimationPlayer.Play(ANIMATION_HOVER_NAME);
+        SelectionAnimationPlayer.Play(ANIMATION_HOVER_NAME);
       })
       .Handle((in GridNodeLogic.Output.HoverExited _) =>
-        AnimationPlayer.PlayBackwards(ANIMATION_HOVER_NAME))
+        SelectionAnimationPlayer.PlayBackwards(ANIMATION_HOVER_NAME))
       .Handle((in GridNodeLogic.Output.Selected output) =>
-        ShowSelectedAnimation(output.Color)
-      );
+        ShowSelectedAnimation(output.Color))
+      .Handle((in GridNodeLogic.Output.Winning output) => PrepareWinningLineAnimation(output.LineIndex, output.LineLength));
 
     GridNodeLogic.Start();
   }
 
   public void ExitTree() {
+    WinningInitialDelayTimer.Timeout -= StartWinningLineAnimation;
+    WinningLineDelayTimer.Timeout -= StartWinningLineAnimation;
     GridNodeMediator.Unregister(GridPosition);
-
-    if (_spawnTween != null) {
-      // Use if instead of null conditional to avoid CS0079 warning
-      _spawnTween.Finished -= OnSpawnComplete;
-    }
-
     GridNodeLogicBinding.Dispose();
   }
 
@@ -138,8 +153,8 @@ public partial class GridNode : Node3D, IGridNode {
   public void Select() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.Select());
 
-  public void InWinningLine() =>
-    GridNodeLogic.Input(new GridNodeLogic.Input.InWinningLine());
+  public void InWinningLine(int lineIndex, int lineLength) =>
+    GridNodeLogic.Input(new GridNodeLogic.Input.InWinningLine(lineIndex, lineLength));
 
   public void GameOver() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.GameOver());
@@ -149,31 +164,16 @@ public partial class GridNode : Node3D, IGridNode {
     color.A = 0.4f;
     var mixedColor = DefaultColor.Blend(color);
 
-    var lastTrackKey = _animationHover.TrackGetKeyCount(_animationHoverTrackIndex) - 1;
-    _animationHover.TrackSetKeyValue(_animationHoverTrackIndex, lastTrackKey, mixedColor);
-  }
-
-  private static int GetAnimationTrackIndex(Animation animation, string trackPath) {
-    var trackIndex = animation.FindTrack(trackPath, Animation.TrackType.Value);
-    return trackIndex == -1
-      ? throw new InvalidOperationException($"{trackPath} track not found.")
-      : trackIndex;
+    _animationHover.TrackSetLastKeyValue(_animationHoverAlbedoColorTrackIndex, mixedColor);
   }
 
   private void ShowSelectedAnimation(Color color) {
-    AnimationPlayer.Play(ANIMATION_SELECT_NAME);
+    SelectionAnimationPlayer.Play(ANIMATION_SELECT_NAME);
     // Get current color to pick up where any hovering animation might be
     var currentColor = GetCurrentMaterialColor();
-    SetAnimationFirsTrackKeyColor(_animationHover, _animationHoverTrackIndex, DefaultColor);
-    SetAnimationLastTrackKeyColor(_animationSelect, _animationSelectTrackIndex, color);
-  }
-
-  private static void SetAnimationFirsTrackKeyColor(Animation animation, int trackIndex, Color color) =>
-    animation.TrackSetKeyValue(trackIndex, 0, color);
-
-  private static void SetAnimationLastTrackKeyColor(Animation animation, int trackIndex, Color color) {
-    var lastTrackKey = animation.TrackGetKeyCount(trackIndex) - 1;
-    animation.TrackSetKeyValue(trackIndex, lastTrackKey, color);
+    _animationHover.TrackSetFirstKeyValue(_animationHoverAlbedoColorTrackIndex, currentColor);
+    _animationSelect.TrackSetLastKeyValue(_animationSelectAlbedoColorTrackIndex, color);
+    _animationWinningLine.TrackSetFirstKeyValue(_animationWinningLineAlbedoColorTrackIndex, color);
   }
 
   private Color GetCurrentMaterialColor() =>
@@ -184,27 +184,30 @@ public partial class GridNode : Node3D, IGridNode {
      AlbedoColor = color
    };
 
-  private void AnimateSpawn() {
-    var data = new List<TweenPropertyData<float>>() {
-      new(0.0f, 0.0f),
-      new(0.85f, 0.3f),
-      new(0.65f, 0.2f),
-      new(0.75f, 0.2f),
-    };
-
-    _spawnTween = GetTree().CreateTween();
-    foreach (var tweenPropertyData in data) {
-      var scaleVector = new Vector3(tweenPropertyData.Data, tweenPropertyData.Data, tweenPropertyData.Data);
-      _spawnTween.TweenProperty(Pyramid, "scale", scaleVector, tweenPropertyData.Duration)
-        .SetTrans(Tween.TransitionType.Cubic)
-        .SetEase(Tween.EaseType.Out);
-    }
-
-    _spawnTween.Finished += OnSpawnComplete;
-  }
-
   private void OnSpawnComplete() =>
     GridNodeLogic.Input(new GridNodeLogic.Input.Spawned());
 
-  private sealed record TweenPropertyData<T>(T Data, float Duration);
+  private void PrepareWinningLineAnimation(int lineIndex, int lineLength) {
+    const float delayBetweenGridNodesInSeconds = 0.30f;
+    const float delayBetweenAnimationRestartInSeconds = 0.80f;
+
+    var animationLengthInSeconds = WinningAnimationPlayer.GetAnimation(ANIMATION_WINNING_LINE_NAME).Length;
+    WinningLineDelayTimer.WaitTime = (animationLengthInSeconds * 2) + (delayBetweenGridNodesInSeconds * lineLength) + delayBetweenAnimationRestartInSeconds;
+
+    if (lineIndex == 0) {
+      StartWinningLineAnimation();
+      return;
+    }
+
+    WinningInitialDelayTimer.WaitTime = delayBetweenGridNodesInSeconds * lineIndex;
+    WinningInitialDelayTimer.Start();
+  }
+
+  private void OnWinningLineAnimationReachedEnd() =>
+    WinningAnimationPlayer.PlayBackwards(ANIMATION_WINNING_LINE_NAME);
+
+  private void StartWinningLineAnimation() {
+    WinningLineDelayTimer.Start();
+    WinningAnimationPlayer.Play(ANIMATION_WINNING_LINE_NAME);
+  }
 }
