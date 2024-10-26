@@ -14,7 +14,6 @@ public partial class GridNodeLogic {
     #region Marked
     public readonly record struct InWinningLine(int LineIndex, int LineLength);
     public readonly record struct GameOver;
-    public readonly record struct Reset;
     #endregion
   }
 }

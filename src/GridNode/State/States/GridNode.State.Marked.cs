@@ -6,7 +6,7 @@ using Chickensoft.LogicBlocks;
 public partial class GridNodeLogic {
   public abstract partial record State {
     [Meta]
-    public partial record Marked : State, IGet<Input.GameOver>, IGet<Input.InWinningLine>, IGet<Input.Reset> {
+    public partial record Marked : State, IGet<Input.GameOver>, IGet<Input.InWinningLine> {
       public Marked() {
         this.OnEnter(() => {
           var data = Get<Data>();
@@ -27,8 +27,6 @@ public partial class GridNodeLogic {
             winningNode.LineLength = lineLength;
           });
       }
-
-      public Transition On(in Input.Reset input) => To<Idle>();
     }
   }
 }

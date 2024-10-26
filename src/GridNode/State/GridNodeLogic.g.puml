@@ -14,10 +14,8 @@ state "GridNodeLogic State" as Vertex_GridNode_State_GridNodeLogic_State {
 Vertex_GridNode_State_GridNodeLogic_State_Hover --> Vertex_GridNode_State_GridNodeLogic_State_Idle : HoverExit
 Vertex_GridNode_State_GridNodeLogic_State_Hover --> Vertex_GridNode_State_GridNodeLogic_State_Marked : Select
 Vertex_GridNode_State_GridNodeLogic_State_Idle --> Vertex_GridNode_State_GridNodeLogic_State_Hover : HoverEnter
-Vertex_GridNode_State_GridNodeLogic_State_Marked --> Vertex_GridNode_State_GridNodeLogic_State_Idle : Reset
 Vertex_GridNode_State_GridNodeLogic_State_Marked --> Vertex_GridNode_State_GridNodeLogic_State_MarkedDisabled : GameOver
 Vertex_GridNode_State_GridNodeLogic_State_Marked --> Vertex_GridNode_State_GridNodeLogic_State_WinningNode : InWinningLine
-Vertex_GridNode_State_GridNodeLogic_State_Unmarked --> Vertex_GridNode_State_GridNodeLogic_State_Unmarked : Reset
 Vertex_GridNode_State_GridNodeLogic_State_Unmarked --> Vertex_GridNode_State_GridNodeLogic_State_UnmarkedDisabled : GameOver
 
 Vertex_GridNode_State_GridNodeLogic_State_Hover : OnEnter → HoverEntered

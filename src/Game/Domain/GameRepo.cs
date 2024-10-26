@@ -40,7 +40,6 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
   public void StartNewGame() {
     if (_grid.Count != 0) {
       _grid.Clear();
-      _grid[Vector2I.Zero] = null;
     }
 
     _hoveredGridNode = null;

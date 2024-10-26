@@ -27,13 +27,7 @@ public class GridNodeMediator(PackedScene gridNodeScene) : IGridNodeMediator {
   public void NewGame() {
     var centerGridNode = Vector2I.Zero;
 
-    if (_grid.Count == 0) {
-      CreateNewGridNode(centerGridNode);
-      return;
-    }
-
     var gridsToRemove = _grid
-      .Where(grid => grid.Key != centerGridNode)
       .Select(grid => grid.Key)
       .ToList();
     foreach (var gridToRemove in gridsToRemove) {
@@ -41,7 +35,7 @@ public class GridNodeMediator(PackedScene gridNodeScene) : IGridNodeMediator {
       _grid.Remove(gridToRemove);
     }
 
-    _grid[centerGridNode].Reset();
+    CreateNewGridNode(centerGridNode);
   }
 
   public Vector2I GetGridNodePosition(IGridNode gridNode) =>

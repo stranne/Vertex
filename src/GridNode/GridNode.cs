@@ -10,7 +10,6 @@ using Vertex.GridNode.State;
 public interface IGridNode : INode3D {
   Vector2I GridPosition { set; }
 
-  void Reset();
   void HoverEnter(Color color);
   void HoverExit();
   void Select();
@@ -113,9 +112,6 @@ public partial class GridNode : Node3D, IGridNode {
     GridNodeLogicBinding
       .Handle((in GridNodeLogic.Output.Spawn _) => {
         CollisionShape3D.Disabled = false;
-        WinningInitialDelayTimer.Stop();
-        WinningLineDelayTimer.Stop();
-        WinningAnimationPlayer.Stop();
         SpawnAnimationPlayer.Play(ANIMATION_SPAWN_NAME);
         ((StandardMaterial3D)PyramidMesh.GetActiveMaterial(0)).AlbedoColor = DefaultColor;
       })
@@ -140,9 +136,6 @@ public partial class GridNode : Node3D, IGridNode {
     GridNodeMediator.Unregister(GridPosition);
     GridNodeLogicBinding.Dispose();
   }
-
-  public void Reset() =>
-    GridNodeLogic.Input(new GridNodeLogic.Input.Reset());
 
   public void HoverEnter(Color color) =>
     GridNodeLogic.Input(new GridNodeLogic.Input.HoverEnter(color));
