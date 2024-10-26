@@ -82,7 +82,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
 
     var positionsInWinningLines = GetPositionsInWinningLines(gridPosition, _currentPlayerId);
     if (positionsInWinningLines.Count > 0) {
-      _log.Print($"Player {_currentPlayerId} won with {positionsInWinningLines.Count} in a row. Positions: {string.Join(", ", positionsInWinningLines)}");
+      _log.Print($"Player {_currentPlayerId} won with {positionsInWinningLines.Count} in a row. Positions: {string.Join(", ", positionsInWinningLines.SelectMany(x => x.Value))}");
       gridNodeMediator.GameEnded(positionsInWinningLines);
       GameEnded?.Invoke();
       return;
@@ -111,7 +111,8 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
       MergeDictionaries(gridPositionsInLine, GetPositionInDirection(gridPosition, direction, playerId));
       MergeDictionaries(gridPositionsInLine, GetPositionInDirection(gridPosition, -direction, playerId));
 
-      if (gridPositionsInLine.Count >= NUMBER_IN_A_ROW_TO_WIN) {
+      var lineLength = gridPositionsInLine.Sum(x => x.Value.Count);
+      if (lineLength >= NUMBER_IN_A_ROW_TO_WIN) {
         MergeDictionaries(gridPositionsInLines, gridPositionsInLine);
       }
     }
