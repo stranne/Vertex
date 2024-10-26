@@ -18,9 +18,7 @@ public interface IGameRepo : IDisposable {
   Color GetCurrentPlayerColor();
 }
 
-public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) : IGameRepo {
-  private const int NUMBER_IN_A_ROW_TO_WIN = 5;
-
+public class GameRepo(int numberInARowToWin, Color[] playerColors, IGridNodeMediator gridNodeMediator) : IGameRepo {
   private readonly GDLog _log = new(nameof(GameRepo));
 
   /// <remarks>
@@ -112,7 +110,7 @@ public class GameRepo(Color[] playerColors, IGridNodeMediator gridNodeMediator) 
       MergeDictionaries(gridPositionsInLine, GetPositionInDirection(gridPosition, -direction, playerId));
 
       var lineLength = gridPositionsInLine.Sum(x => x.Value.Count);
-      if (lineLength >= NUMBER_IN_A_ROW_TO_WIN) {
+      if (lineLength >= numberInARowToWin) {
         MergeDictionaries(gridPositionsInLines, gridPositionsInLine);
       }
     }

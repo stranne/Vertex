@@ -37,6 +37,9 @@ public partial class Game : Node3D, IGame {
 
   [Export]
   public PackedScene GridNodeScene = default!;
+
+  [Export]
+  public int NumberInARowToWin = 5;
   #endregion
 
   #region Nodes
@@ -55,7 +58,7 @@ public partial class Game : Node3D, IGame {
 
   public void Setup() {
     GridNodeMediator = new GridNodeMediator(GridNodeScene);
-    GameRepo = new GameRepo(PlayerColors, GridNodeMediator);
+    GameRepo = new GameRepo(NumberInARowToWin, PlayerColors, GridNodeMediator);
     GridBounds = new GridBounds();
 
     StartMenu.StartGame += OnStartGame;
