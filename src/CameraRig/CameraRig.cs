@@ -65,6 +65,16 @@ public partial class CameraRig : Node3D, ICameraRig {
     var center = bounds.Position + (bounds.Size / 2);
     var height = orthogonalSize * 2;
 
+    var newCameraPosition = new Vector3(center.X, height, center.Y);
+
+    if (GridBounds.MaxX == 1 && GridBounds.MinX == -1 && GridBounds.MaxY == 1 && GridBounds.MinY == -1) {
+      // Set, and don't animate, for the start position
+      Camera.Size = orthogonalSize;
+      Position = newCameraPosition;
+
+      return;
+    }
+
     const float duration = 0.3f;
     var tween = GetTree()
       .CreateTween()
@@ -74,7 +84,7 @@ public partial class CameraRig : Node3D, ICameraRig {
       .SetTrans(Tween.TransitionType.Sine)
       .SetEase(Tween.EaseType.InOut);
     tween
-      .TweenProperty(this, "position", new Vector3(center.X, height, center.Y), duration)
+      .TweenProperty(this, "position", newCameraPosition, duration)
       .SetTrans(Tween.TransitionType.Sine)
       .SetEase(Tween.EaseType.InOut);
   }
