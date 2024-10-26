@@ -4,8 +4,8 @@ using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
 using Godot;
-using Vertex.Game.Domain;
-using Vertex.GridNode.State;
+using Game.Domain;
+using State;
 
 public interface IGridNode : INode3D {
   Vector2I GridPosition { set; }
@@ -140,6 +140,8 @@ public partial class GridNode : Node3D, IGridNode {
   public void ExitTree() {
     WinningInitialDelayTimer.Timeout -= StartWinningLineAnimation;
     WinningLineDelayTimer.Timeout -= StartWinningLineAnimation;
+    WinningInitialDelayTimer.Stop();
+    WinningLineDelayTimer.Stop();
     GridNodeMediator.Unregister(GridPosition);
     GridNodeLogicBinding.Dispose();
   }

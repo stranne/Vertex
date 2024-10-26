@@ -77,6 +77,7 @@ public partial class Game : Node3D, IGame {
     GameEndedMenu.Restart -= OnRestart;
     GameRepo.GameEnded -= OnGameEnded;
     GameRepo.GridNodeSelected -= OnGridNodeSelected;
+    GameRepo.Dispose();
   }
 
   public void OnResolved() {
@@ -97,7 +98,7 @@ public partial class Game : Node3D, IGame {
         GameRepo.AddGridNode(output.GridPosition);
         GridNodeContainer.AddChild((Node3D)output.GridNode);
       })
-      .Handle((in GameLogic.Output.Ending output) =>
+      .Handle((in GameLogic.Output.Ending _) =>
         GameEndedMenu.Visible = true
       );
 

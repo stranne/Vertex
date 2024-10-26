@@ -6,7 +6,7 @@ using System.Linq;
 using Godot;
 using Vertex.GridNode;
 
-public interface IGridNodeMediator : IDisposable {
+public interface IGridNodeMediator {
   event Action<Vector2I, IGridNode>? AddNewGridNode;
 
   void NewGame();
@@ -89,6 +89,4 @@ public class GridNodeMediator(PackedScene gridNodeScene) : IGridNodeMediator {
     newGridNode.GridPosition = gridPosition;
     AddNewGridNode?.Invoke(gridPosition, newGridNode);
   }
-
-  public void Dispose() => GC.SuppressFinalize(this);
 }
