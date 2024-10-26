@@ -123,7 +123,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector3(0.5, 0.5, 0.5)]
+"values": [Vector3(0.001, 0.001, 0.001)]
 }
 
 [sub_resource type="Animation" id="Animation_fja6i"]
@@ -218,7 +218,7 @@ script = ExtResource("1_cr6ng")
 
 [node name="Pyramid" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
+transform = Transform3D(0.001, 0, 0, 0, 0.001, 0, 0, 0, 0.001, 0, 0, 0)
 
 [node name="Cone" type="MeshInstance3D" parent="Pyramid"]
 transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0, 0.444872, 0)
