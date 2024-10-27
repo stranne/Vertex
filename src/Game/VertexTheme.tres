@@ -45,6 +45,7 @@ expand_margin_right = 15.0
 expand_margin_bottom = 10.0
 
 [resource]
+Button/font_sizes/font_size = 32
 Button/styles/focus = SubResource("StyleBoxFlat_38eo8")
 Button/styles/hover = SubResource("StyleBoxFlat_7lxnx")
 Button/styles/normal = SubResource("StyleBoxFlat_jvhv8")
