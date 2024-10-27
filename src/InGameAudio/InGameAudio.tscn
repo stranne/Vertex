@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://bgqyg51hbttle"]
+
+[ext_resource type="Script" path="res://src/InGameAudio/InGameAudio.cs" id="1_bsa5p"]
+[ext_resource type="AudioStream" uid="uid://ct4vxo02ve6ps" path="res://src/InGameAudio/sounds/90s-game-ui-6-185099.mp3" id="2_j7f6u"]
+[ext_resource type="AudioStream" uid="uid://dkycjvvyr1md3" path="res://src/InGameAudio/sounds/game-start-6104.mp3" id="2_ry3s2"]
+[ext_resource type="AudioStream" uid="uid://2cm2cs75bjy2" path="res://src/InGameAudio/sounds/negative_beeps-6008.mp3" id="3_0lfsd"]
+
+[node name="InGameAudio" type="Node"]
+script = ExtResource("1_bsa5p")
+
+[node name="NewGame" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("2_ry3s2")
+
+[node name="GameEnded" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("3_0lfsd")
+
+[node name="GridNodeSelected" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("2_j7f6u")

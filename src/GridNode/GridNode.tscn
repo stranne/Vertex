@@ -255,12 +255,14 @@ libraries = {
 "": SubResource("AnimationLibrary_lrlq8")
 }
 
-[node name="WinningInitialDelayTimer" type="Timer" parent="."]
+[node name="Timers" type="Node3D" parent="."]
+
+[node name="WinningInitialDelayTimer" type="Timer" parent="Timers"]
 unique_name_in_owner = true
 process_callback = 0
 one_shot = true
 
-[node name="WinningLineDelayTimer" type="Timer" parent="."]
+[node name="WinningLineDelayTimer" type="Timer" parent="Timers"]
 unique_name_in_owner = true
 process_callback = 0
 one_shot = true
