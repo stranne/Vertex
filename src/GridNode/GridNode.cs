@@ -43,7 +43,7 @@ public partial class GridNode : Node3D, IGridNode {
   public Color DefaultColor { get; set; } = new(1, 1, 1, 1);
 
   [Export]
-  public float DelayBetweenGridNodesInSeconds { get; set; } = 0.30f;
+  public float DelayBetweenGridNodesInSeconds { get; set; } = 0.20f;
 
   [Export]
   public float DelayBetweenAnimationRestartInSeconds { get; set; } = 0.80f;
