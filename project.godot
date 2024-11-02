@@ -34,3 +34,4 @@ mouse_left_click={
 [rendering]
 
 renderer/rendering_method="mobile"
+textures/vram_compression/import_s3tc_bptc=true

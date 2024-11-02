@@ -157,9 +157,9 @@ public class GameRepo(int numberInARowToWin, Color[] playerColors, IGridNodeMedi
 
   private IEnumerable<Vector2I> GetEmptyNeighborGridPositions(Vector2I gridPosition) {
     Vector2I[] neighborOffsets = [
-      // Don't include diagonals for now.
-      // new (-1, -1),
-      new (-1, 0),
+     // Don't include diagonals for now.
+     // new (-1, -1),
+     new (-1, 0),
       // new (-1, 1),
       new (0, -1),
       new (0, 1),
