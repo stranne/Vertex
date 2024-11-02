@@ -12,9 +12,11 @@
     "addons/**/*.*"
   ],
   "words": [
+    "astc",
     "animatable",
     "assemblyfilters",
     "automerge",
+    "bptc",
     "binutils",
     "branchcoverage",
     "camelcase",
@@ -23,6 +25,7 @@
     "Chickensoft",
     "classfilters",
     "Cmdline",
+    "codesign",
     "cubemap",
     "CYGWIN",
     "deadzone",
@@ -50,6 +53,7 @@
     "msbuild",
     "MSYS",
     "mult",
+    "multiarch",
     "multisample",
     "nameof",
     "netstandard",
