@@ -6,7 +6,6 @@ using Chickensoft.Introspection;
 using Godot;
 using Vertex.Game.Domain;
 
-
 public interface IInGameAudio : INode { }
 
 [Meta(typeof(IAutoNode))]
