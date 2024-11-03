@@ -41,7 +41,7 @@ Create a simple yet visually appealing game with a minimalist design and smooth 
 - **Background:** A darker background that creates contrast against the markers and highlights the game board.
 - **Markers:** Contrasting colors distinguish the two players' markers. The markers have a subtle reflective effect that gives them depth and enhances the minimalist design.
 - **Hover:** When hovering over placement nodes, an opacity color is applied to the node, helping indicate which player will get the marker at this position if placed.
-- **Mouse cursor:** The mouse cursor is represented by an animated particle system that reflects the current player's color. This particle system emits a soft light that casts around the surrounding area, providing a subtle visual cue of the player’s active turn.
+- ~~**Mouse cursor:** The mouse cursor is represented by an animated particle system that reflects the current player's color. This particle system emits a soft light that casts around the surrounding area, providing a subtle visual cue of the player’s active turn.~~
 
 **Animations:**
 
@@ -90,4 +90,4 @@ Create a simple yet visually appealing game with a minimalist design and smooth 
    - Create the start menu and implement the game restart functionality.
 
 6. **Mouse Cursor Experimentation:**
-   - Develop and implement the particle-based mouse cursor that reflects the current player's color and emits light.
+   - ~~Develop and implement the particle-based mouse cursor that reflects the current player's color and emits light.~~
